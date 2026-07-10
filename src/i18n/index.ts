@@ -48,10 +48,15 @@ export function useTranslations(locale: Locale): Translator {
   };
 }
 
-/** Prefixes a site-relative path with the locale: localizePath('fa', '/ideas/') → '/fa/ideas/' */
+/**
+ * Prefixes a site-relative path with the deploy base path and the locale:
+ * localizePath('fa', '/ideas/') → '/fa/ideas/' (or '/qadamha/fa/ideas/' when
+ * the site is served under a base path, as on GitHub Pages).
+ */
 export function localizePath(locale: Locale, path = '/'): string {
+  const base = (import.meta.env.BASE_URL ?? '/').replace(/\/+$/, '');
   const p = path.startsWith('/') ? path : `/${path}`;
-  return p === '/' ? `/${locale}/` : `/${locale}${p}`;
+  return p === '/' ? `${base}/${locale}/` : `${base}/${locale}${p}`;
 }
 
 /** Formats a number with the locale's digits (e.g. ۱۲ for fa/ps). */

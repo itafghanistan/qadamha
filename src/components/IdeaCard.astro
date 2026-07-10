@@ -3,6 +3,7 @@ import type { Locale } from '../i18n';
 import { formatYear, localizePath, useTranslations } from '../i18n';
 import type { Idea } from '../lib/ideas';
 import { hueFromSlug, parseContentId } from '../lib/content-utils';
+import { withBase } from '../config';
 
 interface Props {
   idea: Idea;
@@ -34,7 +35,7 @@ const years =
   <div class="idea-head">
     {
       logo ? (
-        <img class="idea-logo" src={logo} alt="" width="56" height="56" loading="lazy" />
+        <img class="idea-logo" src={withBase(logo)} alt="" width="56" height="56" loading="lazy" />
       ) : (
         <span class="idea-logo idea-monogram" style={`--logo-hue: ${hue}`} aria-hidden="true">
           {name.trim().charAt(0).toUpperCase()}

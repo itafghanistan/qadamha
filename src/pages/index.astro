@@ -2,7 +2,7 @@
 import '@fontsource-variable/vazirmatn';
 import '../styles/global.css';
 import { LOCALES, LOCALE_META, localizePath, useTranslations } from '../i18n';
-import { SITE_URL, GITHUB_REPO } from '../config';
+import { SITE_URL, GITHUB_REPO, withBase } from '../config';
 import { getCollection } from 'astro:content';
 import { parseContentId } from '../lib/content-utils';
 
@@ -19,8 +19,8 @@ const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوت
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
     <title>Qadamha (قدم‌ها) — Every attempt was a step</title>
     <meta name="description" content={tEn('site.description')} />
     <link rel="canonical" href={SITE_URL + '/'} />
@@ -37,7 +37,7 @@ const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوت
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Qadamha (قدم‌ها)" />
     <meta property="og:description" content={tEn('site.description')} />
-    <meta property="og:image" content={new URL('/og/site-en.png', SITE_URL).href} />
+    <meta property="og:image" content={new URL(withBase('/og/site-en.png'), SITE_URL).href} />
   </head>
   <body>
     <main class="landing">

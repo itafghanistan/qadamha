@@ -1,5 +1,6 @@
 ---
 import { hueFromSlug } from '../lib/content-utils';
+import { withBase } from '../config';
 
 interface Props {
   /** Path to the avatar image (e.g. person.data.avatar). */
@@ -20,7 +21,7 @@ const initial = name.trim().charAt(0).toUpperCase();
   src ? (
     <img
       class="avatar"
-      src={src}
+      src={withBase(src)}
       alt=""
       width={size}
       height={size}

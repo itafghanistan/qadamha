@@ -16,7 +16,7 @@ import { getIdeas, getIdeaTranslations, type Idea } from '../../../lib/ideas';
 import { getPostsForIdea } from '../../../lib/posts';
 import { requirePerson } from '../../../lib/people';
 import { getRelated, hueFromSlug, parseContentId } from '../../../lib/content-utils';
-import { GITHUB_IDEA_PATH, SITE_URL } from '../../../config';
+import { GITHUB_IDEA_PATH, SITE_URL, withBase } from '../../../config';
 
 export async function getStaticPaths() {
   const entries = await getCollection('ideas', (entry) => !entry.data.draft);
@@ -163,7 +163,7 @@ const jsonLd = {
           <div class="side-brand">
             {
               data.logo ? (
-                <img class="idea-logo" src={data.logo} alt="" width="96" height="96" />
+                <img class="idea-logo" src={withBase(data.logo)} alt="" width="96" height="96" />
               ) : (
                 <span
                   class="idea-logo idea-monogram"
@@ -188,13 +188,13 @@ const jsonLd = {
                 {
                   data.archiveImage ? (
                     <span class="archive-screen has-image" aria-hidden="true">
-                      <img src={data.archiveImage} alt="" loading="lazy" />
+                      <img src={withBase(data.archiveImage)} alt="" loading="lazy" />
                     </span>
                   ) : (
                     <span class="archive-screen" aria-hidden="true" style={`--logo-hue: ${hue}`}>
                       <span class="skeleton-hero">
                         {data.logo ? (
-                          <img src={data.logo} alt="" width="26" height="26" />
+                          <img src={withBase(data.logo)} alt="" width="26" height="26" />
                         ) : (
                           <span class="skeleton-logo">{data.name.trim().charAt(0).toUpperCase()}</span>
                         )}
