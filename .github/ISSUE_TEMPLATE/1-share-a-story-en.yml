@@ -1,0 +1,73 @@
+name: "Share a story (English)"
+description: "Tell us about a startup, app, or project that stopped or never finished — we'll turn it into a story page and credit you."
+title: "[Story] "
+labels: ["story-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for adding to this archive. Write as much as you know —
+        a maintainer will turn it into a story page and credit you.
+        Please write with respect and honesty; real people lived this story.
+  - type: input
+    id: name
+    attributes:
+      label: Project name
+    validations:
+      required: true
+  - type: input
+    id: tagline
+    attributes:
+      label: One line — what was it?
+      placeholder: "Same-day delivery for Kabul's shopkeepers"
+    validations:
+      required: true
+  - type: input
+    id: founders
+    attributes:
+      label: Founders
+      description: Names and roles, if publicly known or with their consent.
+    validations:
+      required: true
+  - type: input
+    id: city
+    attributes:
+      label: City
+    validations:
+      required: true
+  - type: input
+    id: years
+    attributes:
+      label: Years active
+      placeholder: "2018–2021"
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - Stopped
+        - Paused
+        - Never finished
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: The story
+      description: The idea, the people, the effort, what happened, and why it stopped.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Links & sources
+      description: Archived website, app stores, press articles — anything that documents the project.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: License
+      options:
+        - label: I agree that this content is published under CC BY-SA 4.0.
+          required: true

@@ -1,0 +1,73 @@
+name: "د کیسې ثبتول (پښتو)"
+description: "موږ ته د هغه سټارټ اپ، اپلیکېشن یا پروژې په اړه ولیکئ چې ودرېده یا نیمګړې پاتې شوه — موږ به یې د کیسې پاڼې ته واړوو او ستاسو نوم به ثبت کړو."
+title: "[Story] "
+labels: ["story-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        مننه چې دې ارشیف ته څه ورزیاتوئ. هر څه چې پوهېږئ ویې لیکئ —
+        یو ساتونکی به یې د کیسې پاڼې ته واړوي او ستاسو نوم به ثبت کړي.
+        مهرباني وکړئ په درناوي او رښتینولۍ ولیکئ؛ ریښتینو خلکو دا کیسه ژوند کړې ده.
+  - type: input
+    id: name
+    attributes:
+      label: د پروژې نوم
+    validations:
+      required: true
+  - type: input
+    id: tagline
+    attributes:
+      label: په یوه جمله کې — څه وه؟
+      placeholder: "د کابل دکاندارانو لپاره په همغه ورځ رسونه"
+    validations:
+      required: true
+  - type: input
+    id: founders
+    attributes:
+      label: بنسټ اېښودونکي
+      description: نومونه او رولونه، که په عامه توګه پېژندل شوي وي یا رضایت یې ورکړی وي.
+    validations:
+      required: true
+  - type: input
+    id: city
+    attributes:
+      label: ښار
+    validations:
+      required: true
+  - type: input
+    id: years
+    attributes:
+      label: د فعالیت کلونه
+      placeholder: "۲۰۱۸–۲۰۲۱"
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: حالت
+      options:
+        - ودرېد
+        - وځنډول شو
+        - نیمګړی پاتې شو
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: کیسه
+      description: نظر، خلک، هڅه، څه وشول او ولې ودرېده.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: اړیکې او سرچینې
+      description: ارشیف شوې وېب پاڼه، اپ سټور، خبري مقالې — هر هغه څه چې پروژه مستندوي.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: جواز
+      options:
+        - label: زه موافق یم چې دا منځپانګه د CC BY-SA 4.0 جواز لاندې خپره شي.
+          required: true

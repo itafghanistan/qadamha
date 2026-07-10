@@ -1,0 +1,73 @@
+name: "ثبت یک داستان (دری)"
+description: "دربارهٔ استارتاپ، اپلیکیشن یا پروژه‌ای که متوقف شد یا ناتمام ماند برای ما بنویسید — ما آن را به صفحهٔ داستان تبدیل می‌کنیم و نام شما را ثبت می‌کنیم."
+title: "[Story] "
+labels: ["story-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        از این‌که به این بایگانی می‌افزایید سپاس‌گزاریم. هر آنچه می‌دانید بنویسید —
+        یک نگه‌دارنده آن را به صفحهٔ داستان تبدیل می‌کند و نام شما را ثبت می‌کند.
+        لطفاً با احترام و صداقت بنویسید؛ انسان‌های واقعی این داستان را زندگی کرده‌اند.
+  - type: input
+    id: name
+    attributes:
+      label: نام پروژه
+    validations:
+      required: true
+  - type: input
+    id: tagline
+    attributes:
+      label: در یک جمله — چه بود؟
+      placeholder: "تحویل همان‌روز برای دکان‌داران کابل"
+    validations:
+      required: true
+  - type: input
+    id: founders
+    attributes:
+      label: بنیان‌گذاران
+      description: نام‌ها و نقش‌ها، اگر به‌صورت عمومی شناخته می‌شوند یا رضایت داده‌اند.
+    validations:
+      required: true
+  - type: input
+    id: city
+    attributes:
+      label: شهر
+    validations:
+      required: true
+  - type: input
+    id: years
+    attributes:
+      label: سال‌های فعالیت
+      placeholder: "۲۰۱۸–۲۰۲۱"
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: وضعیت
+      options:
+        - متوقف شد
+        - مکث کرده
+        - ناتمام ماند
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: داستان
+      description: ایده، آدم‌ها، تلاش، آنچه اتفاق افتاد و چرا متوقف شد.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: پیوندها و منابع
+      description: وب‌سایت آرشیوشده، اپ‌استور، مقاله‌های خبری — هر چیزی که پروژه را مستند می‌کند.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: مجوز
+      options:
+        - label: موافقم که این محتوا با مجوز CC BY-SA 4.0 منتشر شود.
+          required: true
