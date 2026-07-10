@@ -22,6 +22,7 @@ const t = useTranslations(locale);
     <div class="container submit">
       <h1>{t('submit.title')}</h1>
       <p class="lead">{t('submit.intro')}</p>
+      <p id="invite-note" class="invite-note" hidden>{t('invite.prefillNote')}</p>
 
       <form
         id="submit-form"
@@ -106,6 +107,16 @@ const t = useTranslations(locale);
 
 <script>
   const form = document.getElementById('submit-form') as HTMLFormElement;
+
+  const params = new URLSearchParams(location.search);
+  const invitedIdea = params.get('idea')?.trim();
+  const invitedName = params.get('name')?.trim();
+  if (invitedIdea) (form.elements.namedItem('tagline') as HTMLInputElement).value = invitedIdea;
+  if (invitedName) (form.elements.namedItem('founders') as HTMLInputElement).value = invitedName;
+  if (invitedIdea || invitedName) {
+    document.getElementById('invite-note')?.removeAttribute('hidden');
+  }
+
   let action = 'github';
   for (const btn of form.querySelectorAll<HTMLButtonElement>('button[type="submit"]')) {
     btn.addEventListener('click', () => (action = btn.dataset.action ?? 'github'));
@@ -154,6 +165,15 @@ const t = useTranslations(locale);
   .lead {
     color: var(--text-muted);
     margin-block-end: 2rem;
+  }
+
+  .invite-note {
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    margin-block-end: 1.5rem;
   }
 
   #submit-form {

@@ -4,6 +4,7 @@ import Base from '../../../layouts/Base.astro';
 import IdeaCard from '../../../components/IdeaCard.astro';
 import PostCard from '../../../components/PostCard.astro';
 import PersonLink from '../../../components/PersonLink.astro';
+import SideLabel from '../../../components/SideLabel.astro';
 import {
   LOCALE_META,
   formatYear,
@@ -211,24 +212,24 @@ const jsonLd = {
           }
 
           <dl>
-            <dt>{t('idea.status')}</dt>
+            <SideLabel icon="status" label={t('idea.status')} />
             <dd><span class="chip">{t(`status.${data.status}`)}</span></dd>
 
-            <dt>{t('idea.reasons')}</dt>
+            <SideLabel icon="reasons" label={t('idea.reasons')} />
             <dd class="chips">
               {data.reasons.map((r) => <span class="chip chip-muted">{t(`reason.${r}`)}</span>)}
             </dd>
 
-            <dt>{t('idea.years')}</dt>
+            <SideLabel icon="years" label={t('idea.years')} />
             <dd>{years}</dd>
 
-            <dt>{t('idea.city')}</dt>
+            <SideLabel icon="city" label={t('idea.city')} />
             <dd>{data.city}</dd>
 
-            <dt>{t('idea.sector')}</dt>
+            <SideLabel icon="sector" label={t('idea.sector')} />
             <dd>{t(`sector.${data.sector}`)}</dd>
 
-            <dt>{t('idea.founders')}</dt>
+            <SideLabel icon="founders" label={t('idea.founders')} />
             <dd>
               <ul class="people-list">
                 {
@@ -239,8 +240,8 @@ const jsonLd = {
                         person={f.profile}
                         name={f.name}
                         link={f.link}
+                        role={f.role}
                       />
-                      {f.role && <span class="role"> — {f.role}</span>}
                     </li>
                   ))
                 }
@@ -250,13 +251,17 @@ const jsonLd = {
             {
               team.length > 0 && (
                 <>
-                  <dt>{t('idea.team')}</dt>
+                  <SideLabel icon="team" label={t('idea.team')} />
                   <dd>
                     <ul class="people-list">
                       {team.map((m) => (
                         <li>
-                          <PersonLink locale={locale} person={m.profile} name={m.name} />
-                          {m.role && <span class="role"> — {m.role}</span>}
+                          <PersonLink
+                            locale={locale}
+                            person={m.profile}
+                            name={m.name}
+                            role={m.role}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -268,7 +273,7 @@ const jsonLd = {
             {
               data.links && data.links.length > 0 && (
                 <>
-                  <dt>{t('idea.links')}</dt>
+                  <SideLabel icon="links" label={t('idea.links')} />
                   <dd>
                     <ul>
                       {data.links.map((l) => (
@@ -287,7 +292,7 @@ const jsonLd = {
             {
               data.sources && data.sources.length > 0 && (
                 <>
-                  <dt>{t('idea.sources')}</dt>
+                  <SideLabel icon="sources" label={t('idea.sources')} />
                   <dd>
                     <ul>
                       {data.sources.map((s) => (
@@ -557,20 +562,8 @@ const jsonLd = {
     margin: 0;
   }
 
-  .idea-side dt {
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-block-start: 1rem;
-  }
-
-  .idea-side dt:first-child {
-    margin-block-start: 0;
-  }
-
   .idea-side dd {
-    margin: 0.25rem 0 0;
+    margin: 0.35rem 0 0;
   }
 
   .idea-side ul {
@@ -583,12 +576,7 @@ const jsonLd = {
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
-  }
-
-  .idea-side .role {
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    gap: 0.65rem;
   }
 
   .chips {

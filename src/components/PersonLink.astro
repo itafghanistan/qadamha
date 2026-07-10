@@ -13,12 +13,15 @@ interface Props {
   name?: string | undefined;
   /** External link fallback (e.g. a founder's website) when there is no profile. */
   link?: string | undefined;
+  /** Their role, shown on a second line aligned with the name. */
+  role?: string | undefined;
   size?: number;
 }
 
-const { locale, person, name, link, size = 22 } = Astro.props;
+const { locale, person, name, link, role, size } = Astro.props;
 const displayName = person ? personName(person, locale) : (name ?? '');
 const href = person ? localizePath(locale, `/people/${person.id}/`) : link;
+const avatarSize = size ?? (role ? 30 : 22);
 ---
 
 {
@@ -28,14 +31,20 @@ const href = person ? localizePath(locale, `/people/${person.id}/`) : link;
         src={person?.data.avatar}
         name={person?.data.name ?? displayName}
         hueKey={person?.id ?? displayName}
-        size={size}
+        size={avatarSize}
       />
-      <span>{displayName}</span>
+      <span class="person-text">
+        <span class="person-name">{displayName}</span>
+        {role && <span class="person-role">{role}</span>}
+      </span>
     </a>
   ) : (
     <span class="person">
-      <Avatar src={undefined} name={displayName} size={size} />
-      <span>{displayName}</span>
+      <Avatar src={undefined} name={displayName} size={avatarSize} />
+      <span class="person-text">
+        <span class="person-name">{displayName}</span>
+        {role && <span class="person-role">{role}</span>}
+      </span>
     </span>
   )
 }
@@ -44,12 +53,33 @@ const href = person ? localizePath(locale, `/people/${person.id}/`) : link;
   .person {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.55rem;
     color: inherit;
   }
 
-  a.person:hover span,
-  a.person:focus-visible span {
+  .person-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+    min-inline-size: 0;
+  }
+
+  .person-name {
+    font-weight: 600;
+  }
+
+  .person-role {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  a.person:hover .person-name,
+  a.person:focus-visible .person-name {
     color: var(--accent-strong);
+  }
+
+  a.person:hover,
+  a.person:focus-visible {
+    text-decoration: none;
   }
 </style>

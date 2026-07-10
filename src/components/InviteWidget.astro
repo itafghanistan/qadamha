@@ -1,0 +1,155 @@
+---
+import type { Locale } from '../i18n';
+import { localizePath, useTranslations } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const invitePath = localizePath(locale, '/invite/');
+---
+
+<div class="invite-box">
+  <form id="invite-form" data-invite-path={invitePath}>
+    <label>
+      <span>{t('invite.f.idea')}</span>
+      <input name="idea" required maxlength="160" placeholder={t('invite.f.ideaPlaceholder')} />
+    </label>
+    <label>
+      <span>{t('invite.f.name')} <em>({t('submit.optional')})</em></span>
+      <input name="name" maxlength="80" />
+    </label>
+    <button type="submit" class="btn btn-primary">{t('invite.generate')}</button>
+  </form>
+
+  <div class="invite-result" hidden>
+    <span class="invite-result-label">{t('invite.linkLabel')}</span>
+    <div class="invite-result-row">
+      <input class="invite-link" type="text" readonly aria-label={t('invite.linkLabel')} />
+      <button type="button" class="btn btn-ghost copy-btn" data-copied={t('idea.copied')}>
+        {t('idea.copyLink')}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { buildInviteSearch } from '../lib/invite';
+
+  const widget = document.querySelector<HTMLElement>('.invite-box')!;
+  const form = widget.querySelector<HTMLFormElement>('#invite-form')!;
+  const result = widget.querySelector<HTMLElement>('.invite-result')!;
+  const linkInput = widget.querySelector<HTMLInputElement>('.invite-link')!;
+  const copyBtn = widget.querySelector<HTMLButtonElement>('.copy-btn')!;
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const idea = (data.get('idea') as string) ?? '';
+    const name = (data.get('name') as string) ?? '';
+    const search = buildInviteSearch(idea, name);
+    if (!search) return;
+
+    const url = new URL(form.dataset.invitePath ?? '/invite/', location.origin);
+    url.search = search;
+
+    linkInput.value = url.href;
+    copyBtn.dataset.url = url.href;
+    result.hidden = false;
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(copyBtn.dataset.url ?? '');
+    const original = copyBtn.textContent;
+    copyBtn.textContent = copyBtn.dataset.copied ?? original;
+    setTimeout(() => (copyBtn.textContent = original), 1600);
+  });
+</script>
+
+<style>
+  .invite-box {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.6rem;
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  #invite-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  #invite-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: start;
+  }
+
+  #invite-form label span {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  #invite-form label em {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: normal;
+    font-size: 0.85rem;
+  }
+
+  #invite-form input {
+    background: var(--bg-soft);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  #invite-form input:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  #invite-form button {
+    align-self: start;
+  }
+
+  .invite-result {
+    margin-block-start: 1.2rem;
+    padding-block-start: 1.2rem;
+    border-block-start: 1px solid var(--border);
+    text-align: start;
+  }
+
+  .invite-result-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-block-end: 0.5rem;
+  }
+
+  .invite-result-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .invite-link {
+    flex: 1;
+    min-inline-size: 12rem;
+    background: var(--bg-soft);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+</style>

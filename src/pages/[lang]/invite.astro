@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LOCALES, localizePath, useTranslations, type Locale } from '../../i18n';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const submitPath = localizePath(locale, '/submit/');
+---
+
+<Base
+  locale={locale}
+  title={`${t('invite.page.cta')} — ${t('site.name')}`}
+  description={t('invite.page.body')}
+  path="/invite/"
+>
+  <section class="section">
+    <div class="container invite-page">
+      <h1 id="invite-heading" data-title-named={t('invite.page.titleNamed')}>
+        {t('invite.page.title')}
+      </h1>
+      <blockquote id="invite-quote" class="invite-quote" hidden></blockquote>
+      <p class="lead">{t('invite.page.body')}</p>
+      <a id="invite-cta" class="btn btn-primary" href={submitPath}>{t('invite.page.cta')}</a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { buildInviteSearch } from '../../lib/invite';
+
+  const params = new URLSearchParams(location.search);
+  const idea = params.get('idea')?.trim() ?? '';
+  const name = params.get('name')?.trim() ?? '';
+
+  const heading = document.getElementById('invite-heading')!;
+  const quote = document.getElementById('invite-quote')!;
+  const cta = document.getElementById('invite-cta') as HTMLAnchorElement;
+
+  if (name) {
+    const template = heading.dataset.titleNamed ?? '';
+    heading.textContent = template.replace('{name}', name);
+  }
+
+  if (idea) {
+    quote.textContent = idea;
+    quote.hidden = false;
+  }
+
+  const search = buildInviteSearch(idea, name);
+  if (search) {
+    cta.href = `${cta.getAttribute('href')}${search}`;
+  }
+</script>
+
+<style>
+  .invite-page {
+    max-width: 38rem;
+    text-align: center;
+  }
+
+  .lead {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-block: 1.25rem 1.75rem;
+  }
+
+  .invite-quote {
+    margin-block: 1.5rem;
+    margin-inline: 0;
+    padding: 1rem 1.4rem;
+    background: var(--bg-raised);
+    border-radius: var(--radius);
+    text-align: start;
+    font-size: 1.1rem;
+    overflow-wrap: break-word;
+  }
+</style>

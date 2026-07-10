@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import IdeaCard from '../../components/IdeaCard.astro';
 import PostCard from '../../components/PostCard.astro';
+import InviteWidget from '../../components/InviteWidget.astro';
 import { LOCALES, formatNumber, localizePath, useTranslations, type Locale } from '../../i18n';
 import { getIdeas } from '../../lib/ideas';
 import { getPosts } from '../../lib/posts';
@@ -65,6 +66,14 @@ const jsonLd = {
       <p class="browse-all">
         <a href={localizePath(locale, '/ideas/')}>{t('home.browseAll')}</a>
       </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container invite-section">
+      <h2>{t('invite.title')}</h2>
+      <p>{t('invite.body')}</p>
+      <InviteWidget locale={locale} />
     </div>
   </section>
 
@@ -149,6 +158,17 @@ const jsonLd = {
   .browse-all {
     margin-block-start: 1.5rem;
     text-align: end;
+  }
+
+  .invite-section {
+    max-width: 40rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .invite-section p {
+    color: var(--text-muted);
+    margin-block-end: 1.75rem;
   }
 
   .letter {
