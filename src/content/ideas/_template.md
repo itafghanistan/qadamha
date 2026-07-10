@@ -8,7 +8,7 @@ tagline: One line that says what it was.
 founders:
   - name: Full Name
     role: Co-founder & CEO # optional
-    # person: person-id    # optional — links to a profile in src/content/people/
+    # person: username     # optional — profile in src/content/people/<username>.md; the SAME username in every language
     # link: https://…      # optional
 team: # optional — remove if not needed
   - name: Full Name

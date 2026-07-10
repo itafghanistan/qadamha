@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
 import { LOCALES, useTranslations, type Locale } from '../../i18n';
 import { SECTORS, STATUSES } from '../../content.config';
 import { CONTACT_EMAIL, GITHUB_NEW_ISSUE } from '../../config';
@@ -93,9 +94,11 @@ const t = useTranslations(locale);
 
         <div class="submit-actions">
           <button type="submit" class="btn btn-primary" data-action="github">
+            <Icon name="github" size={16} />
             {t('submit.action.github')}
           </button>
           <button type="submit" class="btn btn-ghost" data-action="email">
+            <Icon name="mail" size={15} />
             {t('submit.action.email')}
           </button>
         </div>
@@ -111,7 +114,7 @@ const t = useTranslations(locale);
   const params = new URLSearchParams(location.search);
   const invitedIdea = params.get('idea')?.trim();
   const invitedName = params.get('name')?.trim();
-  if (invitedIdea) (form.elements.namedItem('tagline') as HTMLInputElement).value = invitedIdea;
+  if (invitedIdea) (form.elements.namedItem('name') as HTMLInputElement).value = invitedIdea;
   if (invitedName) (form.elements.namedItem('founders') as HTMLInputElement).value = invitedName;
   if (invitedIdea || invitedName) {
     document.getElementById('invite-note')?.removeAttribute('hidden');
@@ -234,6 +237,12 @@ const t = useTranslations(locale);
     gap: 0.8rem;
     flex-wrap: wrap;
     margin-block-start: 0.5rem;
+  }
+
+  .submit-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .submit-note {

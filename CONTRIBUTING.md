@@ -39,6 +39,16 @@ translate the text — including `name`, `tagline`, `city`, and roles — and
 open a pull request. Keep enum fields (`sectors`, `status`, `reasons`) in
 English; the site translates them automatically.
 
+### People and usernames
+
+Founders and team members can have profiles in `src/content/people/`. The
+file name is the person's **username** — lowercase Latin letters, digits and
+dashes (e.g. `zahra-hosseini.md`) — and the **same username is used in every
+language**. Never translate a username: write `person: zahra-hosseini` in
+English, Dari, and Pashto files alike, and put the localized display names in
+the profile's `name_fa` / `name_ps` fields. CI fails the build if a
+`person:` reference doesn't match an existing profile.
+
 ### Not comfortable with GitHub?
 
 [Open a story form](../../issues/new/choose) and write everything you know in
@@ -102,6 +112,16 @@ By contributing you agree that story content is licensed under
 کنید، متن را ترجمه کنید و pull request بفرستید. فیلدهای `sectors`، `status` و
 `reasons` را به انگلیسی نگه دارید؛ سایت خودش ترجمه‌شان می‌کند.
 
+### آدم‌ها و نام‌های کاربری
+
+بنیان‌گذاران و اعضای تیم می‌توانند در `src/content/people/` پروفایل داشته
+باشند. نام فایل، **نام کاربری** شخص است — حروف کوچک لاتین، رقم و خط تیره
+(مثلاً `zahra-hosseini.md`) — و **در هر سه زبان همان یک نام کاربری استفاده
+می‌شود**. نام کاربری را هرگز ترجمه نکنید: در فایل‌های انگلیسی، دری و پشتو
+یکسان `person: zahra-hosseini` بنویسید و نام نمایشی هر زبان را در فیلدهای
+`name_fa` / `name_ps` پروفایل بگذارید. اگر ارجاع `person:` با پروفایلی
+موجود مطابقت نداشته باشد، بررسی خودکار ناکام می‌شود.
+
 ### با گیت‌هاب آشنا نیستید؟
 
 [فورم ثبت داستان](../../issues/new/choose) را باز کنید و هر آنچه می‌دانید با
@@ -147,6 +167,16 @@ By contributing you agree that story content is licensed under
 `ps/my-startup.md` ته (په همغه نوم!) کاپي کړئ، متن وژباړئ او pull request
 واستوئ. د `sectors`، `status` او `reasons` فیلډونه په انګلیسي پرېږدئ؛ سایټ یې
 پخپله ژباړي.
+
+### خلک او کارن-نومونه
+
+بنسټ اېښودونکي او د ټیم غړي کولای شي په `src/content/people/` کې پروفایل
+ولري. د فایل نوم د شخص **کارن-نوم** دی — کوچني لاتیني توري، شمېرې او ډشونه
+(لکه `zahra-hosseini.md`) — او **په درې واړو ژبو کې همغه یو کارن-نوم
+کارول کېږي**. کارن-نوم هېڅکله مه ژباړئ: په انګلیسي، دري او پښتو فایلونو کې
+یو شان `person: zahra-hosseini` ولیکئ او د هرې ژبې ښکارېدونکی نوم د
+پروفایل په `name_fa` / `name_ps` برخو کې کېږدئ. که د `person:` حواله له
+موجود پروفایل سره سمون ونه لري، اتومات کتنه ناکامېږي.
 
 ### له ګیټ هب سره بلد نه یاست؟
 

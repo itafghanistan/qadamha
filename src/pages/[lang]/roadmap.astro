@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { GITHUB_NEW_ISSUE } from '../../config';
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -9,14 +10,20 @@ export function getStaticPaths() {
 const locale = Astro.params.lang as Locale;
 const t = useTranslations(locale);
 
+const planned = Array.from({ length: 6 }, (_, i) => i + 1).map((n) => {
+  const title = t(`roadmap.planned.${n}.title`);
+  const body = t(`roadmap.planned.${n}.body`);
+  const issueUrl =
+    `${GITHUB_NEW_ISSUE}?labels=idea&title=` +
+    encodeURIComponent(`[Idea] ${title}`) +
+    '&body=' +
+    encodeURIComponent(`${body}\n\n`);
+  return { title, body, issueUrl };
+});
+
 const shipped = Array.from({ length: 12 }, (_, i) => i + 1).map((n) => ({
   title: t(`roadmap.shipped.${n}.title`),
   body: t(`roadmap.shipped.${n}.body`),
-}));
-
-const planned = Array.from({ length: 3 }, (_, i) => i + 1).map((n) => ({
-  title: t(`roadmap.planned.${n}.title`),
-  body: t(`roadmap.planned.${n}.body`),
 }));
 ---
 
@@ -31,27 +38,33 @@ const planned = Array.from({ length: 3 }, (_, i) => i + 1).map((n) => ({
       <h1>{t('roadmap.title')}</h1>
       <p class="lead">{t('roadmap.intro')}</p>
 
-      <h2>{t('roadmap.shipped.title')}</h2>
-      <ul class="roadmap-list">
+      <h2>{t('roadmap.planned.title')}</h2>
+      <ul class="planned-list">
         {
-          shipped.map((item) => (
-            <li class="roadmap-item">
-              <span class="chip">{t('roadmap.shipped.badge')}</span>
-              <div>
+          planned.map((item) => (
+            <li class="planned-item">
+              <div class="planned-head">
+                <span class="chip chip-muted">{t('roadmap.planned.badge')}</span>
                 <h3>{item.title}</h3>
-                <p>{item.body}</p>
               </div>
+              <p>{item.body}</p>
+              <a class="btn btn-ghost" href={item.issueUrl} rel="noopener">
+                {t('roadmap.planned.requestCta')}
+              </a>
             </li>
           ))
         }
       </ul>
 
-      <h2>{t('roadmap.planned.title')}</h2>
-      <ul class="roadmap-list">
+      <h2>{t('roadmap.shipped.title')}</h2>
+      <ul class="shipped-list">
         {
-          planned.map((item) => (
-            <li class="roadmap-item">
-              <span class="chip chip-muted">{t('roadmap.planned.badge')}</span>
+          shipped.map((item) => (
+            <li class="shipped-item">
+              <span class="check" aria-hidden="true">
+                ✓
+              </span>
+              <span class="sr-only">{t('roadmap.shipped.badge')}</span>
               <div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
@@ -66,12 +79,13 @@ const planned = Array.from({ length: 3 }, (_, i) => i + 1).map((n) => ({
 
 <style>
   .roadmap {
-    max-width: 46rem;
+    max-width: 56rem;
   }
 
   .lead {
     font-size: 1.15rem;
     color: var(--text-muted);
+    max-width: 44rem;
   }
 
   .roadmap > h2 {
@@ -79,7 +93,20 @@ const planned = Array.from({ length: 3 }, (_, i) => i + 1).map((n) => ({
     color: var(--accent-strong);
   }
 
-  .roadmap-list {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Planned */
+  .planned-list {
     list-style: none;
     margin: 1rem 0 0;
     padding: 0;
@@ -88,34 +115,74 @@ const planned = Array.from({ length: 3 }, (_, i) => i + 1).map((n) => ({
     gap: 0.75rem;
   }
 
-  .roadmap-item {
+  .planned-item {
     display: flex;
-    align-items: baseline;
-    gap: 0.9rem;
+    flex-direction: column;
+    gap: 0.6rem;
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1rem 1.1rem;
   }
 
-  .roadmap-item .chip {
-    flex: none;
+  .planned-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  .roadmap-item h3 {
+  .planned-item h3 {
     font-size: 1rem;
-    margin: 0 0 0.25rem;
+    margin: 0;
   }
 
-  .roadmap-item p {
+  .planned-item p {
     margin: 0;
     color: var(--text-muted);
   }
 
-  @media (max-width: 30rem) {
-    .roadmap-item {
-      flex-direction: column;
-      gap: 0.4rem;
-    }
+  .planned-item .btn {
+    align-self: start;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Shipped — dense grid so every feature is visible at a glance */
+  .shipped-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0.6rem;
+  }
+
+  .shipped-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.75rem;
+  }
+
+  .shipped-item .check {
+    flex: none;
+    color: var(--accent-strong);
+    font-weight: 800;
+    line-height: 1.5;
+  }
+
+  .shipped-item h3 {
+    font-size: 0.9rem;
+    margin: 0 0 0.15rem;
+  }
+
+  .shipped-item p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-muted);
   }
 </style>

@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import IdeaCard from '../../components/IdeaCard.astro';
 import PostCard from '../../components/PostCard.astro';
 import InviteWidget from '../../components/InviteWidget.astro';
+import Icon from '../../components/Icon.astro';
 import { LOCALES, formatNumber, localizePath, useTranslations, type Locale } from '../../i18n';
 import { getIdeas } from '../../lib/ideas';
 import { getPosts } from '../../lib/posts';
@@ -42,7 +43,10 @@ const jsonLd = {
 
   <section class="hero">
     <div class="container">
-      <p class="kicker">{t('home.hero.kicker')}</p>
+      <p class="kicker">
+        <Icon name="steps" size={14} />
+        {t('home.hero.kicker')}
+      </p>
       <h1>{t('home.hero.title')}</h1>
       <p class="hero-subtitle">{t('home.hero.subtitle')}</p>
       <div class="hero-actions">
@@ -128,10 +132,17 @@ const jsonLd = {
   }
 
   .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     color: var(--accent-strong);
     font-weight: 600;
     letter-spacing: 0.04em;
     margin-block-end: 0.75rem;
+  }
+
+  .kicker :global(svg) {
+    color: var(--accent);
   }
 
   .hero-subtitle {

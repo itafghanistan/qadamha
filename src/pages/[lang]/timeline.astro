@@ -4,7 +4,6 @@ import IdeaCard from '../../components/IdeaCard.astro';
 import { LOCALES, formatYear, useTranslations, type Locale } from '../../i18n';
 import { getIdeas } from '../../lib/ideas';
 import { groupByYear } from '../../lib/content-utils';
-import type { Idea } from '../../lib/ideas';
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -17,24 +16,6 @@ const groups = groupByYear(ideas);
 
 /** Years that have a historical context line in the dictionaries. */
 const CONTEXT_YEARS = [2021, 2020, 2014];
-
-/** Flatten year groups into rows; cards alternate sides of the center spine. */
-type Row =
-  | { kind: 'year'; year: number; context: string | null }
-  | { kind: 'idea'; idea: Idea; side: 'start' | 'end'; delay: number };
-
-let cardIndex = 0;
-const rows: Row[] = groups.flatMap((group): Row[] => [
-  {
-    kind: 'year',
-    year: group.year,
-    context: CONTEXT_YEARS.includes(group.year) ? t(`timeline.context.${group.year}`) : null,
-  },
-  ...group.ideas.map((idea, i): Row => {
-    const side: 'start' | 'end' = cardIndex++ % 2 === 0 ? 'start' : 'end';
-    return { kind: 'idea', idea, side, delay: i * 90 };
-  }),
-]);
 ---
 
 <Base
@@ -44,39 +25,61 @@ const rows: Row[] = groups.flatMap((group): Row[] => [
   path="/timeline/"
 >
   <section class="section">
-    <div class="container">
-      <h1>{t('timeline.title')}</h1>
-      <p class="page-subtitle">{t('timeline.subtitle')}</p>
+    <div class="container timeline-head">
+      <div>
+        <h1>{t('timeline.title')}</h1>
+        <p class="page-subtitle">{t('timeline.subtitle')}</p>
+      </div>
+      <div class="h-nav" aria-hidden="false">
+        <button class="h-btn" id="h-prev" aria-label={t('timeline.prev')}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 6-6 6 6 6"></path>
+          </svg>
+        </button>
+        <button class="h-btn" id="h-next" aria-label={t('timeline.next')}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 6 6 6-6 6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-      <ol class="timeline" id="timeline">
-        <div class="t-track" aria-hidden="true">
-          <div class="t-progress" id="t-progress"></div>
+    <div class="h-scroll" id="h-scroll" tabindex="0" role="region" aria-label={t('timeline.title')}>
+      <div class="h-inner">
+        <div class="h-spine" aria-hidden="true">
+          <div class="h-progress" id="h-progress"></div>
         </div>
-        {
-          rows.map((row) =>
-            row.kind === 'year' ? (
-              <li class="t-year">
-                <span class="year-badge reveal-pop">{formatYear(locale, row.year)}</span>
-                {row.context && <p class="year-context reveal-pop">{row.context}</p>}
+        <ol class="h-cols">
+          {
+            groups.map((group, gi) => (
+              <li class="h-col" style={`--d: ${Math.min(gi, 4) * 110}ms`}>
+                <span class="year-badge reveal-pop">{formatYear(locale, group.year)}</span>
+                {CONTEXT_YEARS.includes(group.year) && (
+                  <p class="year-context reveal-rise">{t(`timeline.context.${group.year}`)}</p>
+                )}
+                <div class="h-cards">
+                  {group.ideas.map((idea, i) => (
+                    <div class="h-card reveal-rise" style={`--d: ${Math.min(gi, 4) * 110 + i * 120}ms`}>
+                      <IdeaCard idea={idea} locale={locale} />
+                    </div>
+                  ))}
+                </div>
               </li>
-            ) : (
-              <li
-                class={`t-item side-${row.side} reveal-slide`}
-                style={`--d: ${row.delay}ms`}
-              >
-                <IdeaCard idea={row.idea} locale={locale} />
-              </li>
-            ),
-          )
-        }
-      </ol>
+            ))
+          }
+        </ol>
+      </div>
     </div>
   </section>
 </Base>
 
 <script>
-  // Reveal rows as they enter the viewport.
-  const items = document.querySelectorAll('.reveal-slide, .reveal-pop');
+  const scroller = document.getElementById('h-scroll')!;
+  const progress = document.getElementById('h-progress')!;
+  const isRtl = document.documentElement.dir === 'rtl';
+
+  // Reveal columns and cards as they scroll into view horizontally.
+  const items = document.querySelectorAll('.reveal-pop, .reveal-rise');
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -87,93 +90,190 @@ const rows: Row[] = groups.flatMap((group): Row[] => [
           }
         }
       },
-      { rootMargin: '0px 0px -10% 0px' },
+      { root: scroller, rootMargin: '0px -6% 0px -6%' },
     );
     items.forEach((el) => observer.observe(el));
   } else {
     items.forEach((el) => el.classList.add('is-visible'));
   }
 
-  // The spine fills with light as the reader travels down the years.
-  const timeline = document.getElementById('timeline');
-  const progress = document.getElementById('t-progress');
-  if (timeline && progress) {
-    let ticking = false;
-    const update = () => {
-      ticking = false;
-      const rect = timeline.getBoundingClientRect();
-      const anchor = window.innerHeight * 0.72;
-      const filled = Math.min(Math.max(anchor - rect.top, 0), rect.height);
-      progress.style.blockSize = `${filled}px`;
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(update);
+  // The spine fills with light as the reader travels through the years.
+  let ticking = false;
+  const updateProgress = () => {
+    ticking = false;
+    const traveled = Math.abs(scroller.scrollLeft) + scroller.clientWidth * 0.6;
+    progress.style.inlineSize = `${Math.min(traveled, scroller.scrollWidth)}px`;
+  };
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(updateProgress);
+    }
+  };
+  scroller.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  updateProgress();
+
+  // Mouse wheels scroll vertically; translate that into horizontal travel.
+  scroller.addEventListener(
+    'wheel',
+    (event) => {
+      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+        event.preventDefault();
+        scroller.scrollLeft += (isRtl ? -event.deltaY : event.deltaY) * 1.4;
       }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    update();
-  }
+    },
+    { passive: false },
+  );
+
+  // Arrow buttons step one column at a time.
+  const step = () => {
+    const col = scroller.querySelector<HTMLElement>('.h-col');
+    return (col?.offsetWidth ?? 320) + 32;
+  };
+  document.getElementById('h-prev')?.addEventListener('click', () => {
+    scroller.scrollBy({ left: (isRtl ? 1 : -1) * step(), behavior: 'smooth' });
+  });
+  document.getElementById('h-next')?.addEventListener('click', () => {
+    scroller.scrollBy({ left: (isRtl ? -1 : 1) * step(), behavior: 'smooth' });
+  });
 </script>
 
 <style>
+  .timeline-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-block-end: 2rem;
+  }
+
   .page-subtitle {
     color: var(--text-muted);
     max-width: 44rem;
-    margin-block-end: 2.5rem;
-  }
-
-  .timeline {
-    list-style: none;
     margin: 0;
-    padding: 1rem 0 2rem;
-    position: relative;
   }
 
-  /* The spine */
-  .t-track {
+  .h-nav {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .h-btn {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .h-btn:hover,
+  .h-btn:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+    transform: translateY(-2px);
+  }
+
+  [dir='rtl'] .h-btn svg {
+    transform: scaleX(-1);
+  }
+
+  /* The horizontal scroll stage */
+  .h-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding-block-end: 1.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--bg-raised);
+  }
+
+  .h-scroll:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .h-inner {
+    position: relative;
+    inline-size: max-content;
+    min-inline-size: 100%;
+    padding-block-start: 0.6rem;
+    padding-inline: max(1.25rem, calc((100vw - var(--content-width)) / 2));
+  }
+
+  /* The spine the years sit on */
+  .h-spine {
     position: absolute;
-    inset-block: 0;
-    inset-inline-start: 50%;
-    inline-size: 3px;
-    margin-inline-start: -1.5px;
+    inset-inline: 0;
+    inset-block-start: 1.9rem;
+    block-size: 3px;
     background: var(--border);
     border-radius: 2px;
     overflow: hidden;
   }
 
-  .t-progress {
-    inline-size: 100%;
-    block-size: 0;
-    background: linear-gradient(to bottom, var(--accent-strong), var(--accent));
+  .h-progress {
+    block-size: 100%;
+    inline-size: 0;
+    background: linear-gradient(to var(--progress-dir, right), var(--accent-strong), var(--accent));
     box-shadow: 0 0 14px rgba(232, 163, 61, 0.6);
   }
 
-  /* Year badges sit on the spine */
-  .t-year {
+  [dir='rtl'] .h-progress {
+    --progress-dir: left;
+    margin-inline-start: auto;
+  }
+
+  .h-cols {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .h-col {
     position: relative;
-    z-index: 1;
+    inline-size: clamp(17rem, 21rem, 80vw);
+    flex-shrink: 0;
+    scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    margin-block: 2.75rem 1.75rem;
+    gap: 0.9rem;
   }
 
-  .t-year:first-of-type {
-    margin-block-start: 0.5rem;
+  /* Vertical drop-line from the spine down to the cards */
+  .h-col::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 2.6rem;
+    inset-inline-start: 50%;
+    inline-size: 2px;
+    block-size: 1.6rem;
+    background: var(--border);
   }
 
   .year-badge {
+    position: relative;
+    z-index: 1;
     display: inline-block;
-    padding: 0.3rem 1.5rem;
+    padding: 0.25rem 1.4rem;
     border: 2px solid var(--accent);
     border-radius: 999px;
     background: var(--bg);
     color: var(--accent-strong);
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 800;
     box-shadow:
       0 0 0 6px var(--bg),
@@ -181,167 +281,56 @@ const rows: Row[] = groups.flatMap((group): Row[] => [
   }
 
   .year-context {
-    max-width: 30rem;
-    margin: 0;
-    padding: 0.2rem 1rem;
-    background: var(--bg);
+    margin: 0.9rem 0 0;
     color: var(--text-muted);
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     text-align: center;
+    max-inline-size: 19rem;
   }
 
-  /* Cards alternate sides of the spine */
-  .t-item {
-    position: relative;
-    z-index: 1;
-    inline-size: calc(50% - 2.75rem);
-    margin-block-end: 1.75rem;
-  }
-
-  .t-item.side-start {
-    margin-inline-end: auto;
-  }
-
-  .t-item.side-end {
-    margin-inline-start: auto;
-  }
-
-  /* Connector from card to spine, with a node dot on the line */
-  .t-item::before {
-    content: '';
-    position: absolute;
-    inset-block-start: 2.1rem;
-    inline-size: 2.75rem;
-    block-size: 2px;
-    background: var(--border);
-  }
-
-  .t-item::after {
-    content: '';
-    position: absolute;
-    inset-block-start: calc(2.1rem - 5px);
-    inline-size: 12px;
-    block-size: 12px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--accent);
-    transition: background 0.4s ease, box-shadow 0.4s ease;
-  }
-
-  .t-item.side-start::before {
-    inset-inline-end: -2.75rem;
-  }
-
-  .t-item.side-start::after {
-    inset-inline-end: calc(-2.75rem - 7px);
-  }
-
-  .t-item.side-end::before {
-    inset-inline-start: -2.75rem;
-  }
-
-  .t-item.side-end::after {
-    inset-inline-start: calc(-2.75rem - 7px);
-  }
-
-  .t-item.is-visible::after {
-    background: var(--accent);
-    box-shadow: 0 0 12px rgba(232, 163, 61, 0.7);
+  .h-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    inline-size: 100%;
+    margin-block-start: 1rem;
   }
 
   /* Animations (skipped entirely under prefers-reduced-motion) */
   @media (prefers-reduced-motion: no-preference) {
-    .reveal-slide {
-      opacity: 0;
-      transform: translateX(var(--from, 0)) translateY(10px);
-      transition:
-        opacity 0.6s ease,
-        transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
-      transition-delay: var(--d, 0ms);
-    }
-
-    .side-start {
-      --from: -44px;
-    }
-
-    .side-end {
-      --from: 44px;
-    }
-
-    [dir='rtl'] .side-start {
-      --from: 44px;
-    }
-
-    [dir='rtl'] .side-end {
-      --from: -44px;
-    }
-
     .reveal-pop {
       opacity: 0;
       transform: scale(0.55);
       transition:
         opacity 0.45s ease,
         transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition-delay: var(--d, 0ms);
     }
 
-    .reveal-slide.is-visible,
-    .reveal-pop.is-visible {
+    .reveal-rise {
+      opacity: 0;
+      transform: translateY(26px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.6s cubic-bezier(0.22, 0.9, 0.3, 1);
+      transition-delay: var(--d, 0ms);
+    }
+
+    .reveal-pop.is-visible,
+    .reveal-rise.is-visible {
       opacity: 1;
       transform: none;
     }
   }
 
-  /* Narrow screens: spine moves to the side, cards stack on one side */
-  @media (max-width: 56rem) {
-    .t-track {
-      inset-inline-start: 0.45rem;
-      margin-inline-start: 0;
+  @media (max-width: 40rem) {
+    .h-col {
+      inline-size: 78vw;
     }
 
-    .t-year {
-      align-items: flex-start;
-      margin-block: 2.25rem 1.25rem;
-    }
-
-    .year-badge,
-    .year-context {
-      margin-inline-start: 2rem;
-      text-align: start;
-      padding-inline: 1rem 0.5rem;
-    }
-
-    .year-badge {
-      box-shadow: 0 0 0 6px var(--bg);
-    }
-
-    .t-item,
-    .t-item.side-start,
-    .t-item.side-end {
-      inline-size: auto;
-      margin-inline: 2rem 0;
-    }
-
-    .t-item.side-start::before,
-    .t-item.side-end::before {
-      inset-inline-start: -1.55rem;
-      inset-inline-end: auto;
-      inline-size: 1.55rem;
-    }
-
-    .t-item.side-start::after,
-    .t-item.side-end::after {
-      inset-inline-start: calc(-1.55rem - 6px);
-      inset-inline-end: auto;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .side-start,
-      .side-end,
-      [dir='rtl'] .side-start,
-      [dir='rtl'] .side-end {
-        --from: 0px;
-      }
+    .h-cols {
+      gap: 1.25rem;
     }
   }
 </style>

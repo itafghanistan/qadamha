@@ -11,7 +11,7 @@ import {
 } from '../../../i18n';
 import type { Post } from '../../../lib/posts';
 import { getPostTranslations, youTubeId } from '../../../lib/posts';
-import { getPerson, personName } from '../../../lib/people';
+import { personName, requirePerson } from '../../../lib/people';
 import { parseContentId } from '../../../lib/content-utils';
 import { GITHUB_CONTENT_PATH, SITE_URL } from '../../../config';
 
@@ -32,7 +32,7 @@ const { Content } = await render(entry);
 const data = entry.data;
 const availableLocales = await getPostTranslations(slug);
 const otherLocales = availableLocales.filter((l) => l !== locale);
-const person = await getPerson(data.author.person);
+const person = await requirePerson(data.author.person, entry.id);
 const authorName = person ? personName(person, locale) : (data.author.name ?? 'Qadamha');
 const idea = data.idea ? await getEntry('ideas', `${locale}/${data.idea}`) : undefined;
 const videoId = data.videoUrl ? youTubeId(data.videoUrl) : null;

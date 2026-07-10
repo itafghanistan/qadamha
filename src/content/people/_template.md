@@ -1,5 +1,8 @@
 ---
-# The file name is the person's id, e.g. zahra-hosseini.md.
+# The file name is the person's USERNAME, e.g. zahra-hosseini.md.
+# Usernames are lowercase Latin letters, digits and dashes — and the SAME
+# username is used in EVERY language (en, fa, ps). Never translate it;
+# localized display names go in name_fa / name_ps below.
 # Ideas and posts link to it with `person: zahra-hosseini`.
 name: Full Name # in Latin script
 name_fa: نام کامل # optional — shown on Dari pages

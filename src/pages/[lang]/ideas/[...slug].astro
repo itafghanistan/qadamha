@@ -14,7 +14,7 @@ import {
 } from '../../../i18n';
 import { getIdeas, getIdeaTranslations, type Idea } from '../../../lib/ideas';
 import { getPostsForIdea } from '../../../lib/posts';
-import { getPerson } from '../../../lib/people';
+import { requirePerson } from '../../../lib/people';
 import { getRelated, hueFromSlug, parseContentId } from '../../../lib/content-utils';
 import { GITHUB_IDEA_PATH, SITE_URL } from '../../../config';
 
@@ -41,10 +41,10 @@ const missingLocales = (['en', 'fa', 'ps'] as Locale[]).filter(
 const related = getRelated(entry, await getIdeas(locale));
 const relatedPosts = await getPostsForIdea(locale, slug);
 const founders = await Promise.all(
-  data.founders.map(async (c) => ({ ...c, profile: await getPerson(c.person) })),
+  data.founders.map(async (c) => ({ ...c, profile: await requirePerson(c.person, entry.id) })),
 );
 const team = await Promise.all(
-  (data.team ?? []).map(async (c) => ({ ...c, profile: await getPerson(c.person) })),
+  (data.team ?? []).map(async (c) => ({ ...c, profile: await requirePerson(c.person, entry.id) })),
 );
 
 const years =

@@ -7,7 +7,7 @@ date: 2026-01-15
 type: story # one of: story (personal account), update (news), opinion, video
 # idea: my-startup     # optional — slug of the idea this post is about
 author:
-  person: person-id # id of a profile in src/content/people/ …
+  person: username # profile in src/content/people/<username>.md — same username in every language …
   # name: Full Name  # …or just a display name if there is no profile
 # videoUrl: https://www.youtube.com/watch?v=…   # for type: video — embedded on the page
 draft: true # set to false when ready to publish

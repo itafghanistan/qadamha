@@ -3,6 +3,7 @@ import {
   buildFilterIndex,
   getRelated,
   groupByYear,
+  isValidPersonId,
   normalizeSearchText,
   parseContentId,
   type IdeaRef,
@@ -111,5 +112,21 @@ describe('groupByYear', () => {
     const groups = groupByYear([a, b, c]);
     expect(groups.map((g) => g.year)).toEqual([2020, 2015]);
     expect(groups[0]!.ideas.map((s) => s.data.name)).toEqual(['Aaa', 'en/b']);
+  });
+});
+
+describe('isValidPersonId', () => {
+  it('accepts lowercase-latin-dash usernames', () => {
+    expect(isValidPersonId('zahra-hosseini')).toBe(true);
+    expect(isValidPersonId('rashid2003')).toBe(true);
+  });
+
+  it('rejects translated, uppercase, or malformed usernames', () => {
+    expect(isValidPersonId('زهرا-حسینی')).toBe(false); // usernames are never translated
+    expect(isValidPersonId('Zahra-Hosseini')).toBe(false);
+    expect(isValidPersonId('zahra hosseini')).toBe(false);
+    expect(isValidPersonId('-zahra')).toBe(false);
+    expect(isValidPersonId('zahra-')).toBe(false);
+    expect(isValidPersonId('')).toBe(false);
   });
 });

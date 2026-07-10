@@ -136,6 +136,17 @@ export function groupByYear<T extends IdeaRef>(ideas: T[]): { year: number; idea
     }));
 }
 
+/**
+ * A person's username: ONE lowercase Latin slug (e.g. "zahra-hosseini") used
+ * identically in English, Dari, and Pashto content. Localized display names
+ * belong in the profile's name_fa/name_ps fields, never in the username.
+ */
+export const PERSON_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function isValidPersonId(id: string): boolean {
+  return PERSON_ID_PATTERN.test(id);
+}
+
 /** A deterministic hue for monogram/avatar fallbacks, derived from a slug. */
 export function hueFromSlug(slug: string): number {
   let hash = 0;

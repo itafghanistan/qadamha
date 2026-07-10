@@ -1,6 +1,7 @@
 ---
 import type { Locale } from '../i18n';
 import { localizePath, useTranslations } from '../i18n';
+import Icon from './Icon.astro';
 
 interface Props {
   locale: Locale;
@@ -15,13 +16,16 @@ const invitePath = localizePath(locale, '/invite/');
   <form id="invite-form" data-invite-path={invitePath}>
     <label>
       <span>{t('invite.f.idea')}</span>
-      <input name="idea" required maxlength="160" placeholder={t('invite.f.ideaPlaceholder')} />
+      <input name="idea" required maxlength="80" placeholder={t('invite.f.ideaPlaceholder')} />
     </label>
     <label>
       <span>{t('invite.f.name')} <em>({t('submit.optional')})</em></span>
       <input name="name" maxlength="80" />
     </label>
-    <button type="submit" class="btn btn-primary">{t('invite.generate')}</button>
+    <button type="submit" class="btn btn-primary">
+      <Icon name="link" size={15} />
+      {t('invite.generate')}
+    </button>
   </form>
 
   <div class="invite-result" hidden>
@@ -29,7 +33,8 @@ const invitePath = localizePath(locale, '/invite/');
     <div class="invite-result-row">
       <input class="invite-link" type="text" readonly aria-label={t('invite.linkLabel')} />
       <button type="button" class="btn btn-ghost copy-btn" data-copied={t('idea.copied')}>
-        {t('idea.copyLink')}
+        <Icon name="copy" size={14} />
+        <span class="copy-btn-text">{t('idea.copyLink')}</span>
       </button>
     </div>
   </div>
@@ -60,11 +65,13 @@ const invitePath = localizePath(locale, '/invite/');
     result.hidden = false;
   });
 
+  const copyBtnText = copyBtn.querySelector<HTMLElement>('.copy-btn-text')!;
+
   copyBtn.addEventListener('click', async () => {
     await navigator.clipboard.writeText(copyBtn.dataset.url ?? '');
-    const original = copyBtn.textContent;
-    copyBtn.textContent = copyBtn.dataset.copied ?? original;
-    setTimeout(() => (copyBtn.textContent = original), 1600);
+    const original = copyBtnText.textContent;
+    copyBtnText.textContent = copyBtn.dataset.copied ?? original;
+    setTimeout(() => (copyBtnText.textContent = original), 1600);
   });
 </script>
 
@@ -119,6 +126,15 @@ const invitePath = localizePath(locale, '/invite/');
 
   #invite-form button {
     align-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   .invite-result {

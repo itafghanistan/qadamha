@@ -2,6 +2,7 @@
 import type { Locale } from '../i18n';
 import { localizePath, useTranslations } from '../i18n';
 import { GITHUB_NEW_ISSUE, GITHUB_REPO, SITE_URL } from '../config';
+import Icon from './Icon.astro';
 
 interface Props {
   locale: Locale;
@@ -26,11 +27,20 @@ const reportUrl =
       {t('footer.tagline')}
     </p>
     <p class="footer-meta">
-      <a href={GITHUB_REPO} rel="noopener">{t('footer.openSource')}</a>
+      <a class="footer-link" href={GITHUB_REPO} rel="noopener">
+        <Icon name="github" size={14} />
+        {t('footer.openSource')}
+      </a>
       <span aria-hidden="true"> · </span>
-      <a href={localizePath(locale, '/roadmap/')}>{t('footer.roadmap')}</a>
+      <a class="footer-link" href={localizePath(locale, '/roadmap/')}>
+        <Icon name="steps" size={14} />
+        {t('footer.roadmap')}
+      </a>
       <span aria-hidden="true"> · </span>
-      <a href={reportUrl} rel="noopener">{t('footer.reportIssue')}</a>
+      <a class="footer-link" href={reportUrl} rel="noopener">
+        <Icon name="flag" size={14} />
+        {t('footer.reportIssue')}
+      </a>
       <span aria-hidden="true"> · </span>
       <span>{t('footer.license')}</span>
     </p>
@@ -62,5 +72,15 @@ const reportUrl =
   .footer-tagline,
   .footer-meta {
     margin: 0;
+  }
+
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .footer-link :global(svg) {
+    color: var(--accent);
   }
 </style>

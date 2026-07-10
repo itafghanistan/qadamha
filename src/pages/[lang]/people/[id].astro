@@ -8,11 +8,20 @@ import SocialIcon from '../../../components/SocialIcon.astro';
 import { LOCALES, useTranslations, type Locale } from '../../../i18n';
 import { getIdeas } from '../../../lib/ideas';
 import { getPostsByPerson } from '../../../lib/posts';
-import { ideasForPerson, personName, type Person } from '../../../lib/people';
+import { ideasForPerson, isValidPersonId, personName, type Person } from '../../../lib/people';
 import { parseContentId } from '../../../lib/content-utils';
 
 export async function getStaticPaths() {
   const people = await getCollection('people');
+  for (const person of people) {
+    if (!isValidPersonId(person.id)) {
+      throw new Error(
+        `Invalid person username "${person.id}" (src/content/people/${person.id}.md): ` +
+          `usernames are lowercase Latin letters, digits and dashes, and the SAME username ` +
+          `is used in every language. Localized names go in name_fa/name_ps.`,
+      );
+    }
+  }
   return LOCALES.flatMap((lang) =>
     people.map((person) => ({ params: { lang, id: person.id }, props: { person } })),
   );
