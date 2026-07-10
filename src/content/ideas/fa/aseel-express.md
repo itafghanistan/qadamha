@@ -14,7 +14,9 @@ team:
     role: راکب ارشد و عملیات
   - name: مریم سادات
     role: برنامه‌نویس اندروید
-sector: logistics
+sectors:
+  - logistics
+  - ecommerce
 city: کابل
 yearsActive:
   start: 2018

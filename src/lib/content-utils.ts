@@ -9,7 +9,7 @@ export interface IdeaRef {
   data: {
     name: string;
     tagline: string;
-    sector: string;
+    sectors: string[];
     city: string;
     yearsActive: { start: number; end?: number };
     status: string;
@@ -52,7 +52,7 @@ export function parseContentId(id: string): { locale: Locale; slug: string } {
 }
 
 /**
- * Related ideas: shares sector (2 points) or city (1 point) with `idea`;
+ * Related ideas: shares a category (2 points) or city (1 point) with `idea`;
  * highest score first, ties broken by more recent start year.
  */
 export function getRelated<T extends IdeaRef>(idea: T, all: T[], limit = 3): T[] {
@@ -61,7 +61,8 @@ export function getRelated<T extends IdeaRef>(idea: T, all: T[], limit = 3): T[]
     .map((s) => ({
       s,
       score:
-        (s.data.sector === idea.data.sector ? 2 : 0) + (s.data.city === idea.data.city ? 1 : 0),
+        (s.data.sectors.some((sec) => idea.data.sectors.includes(sec)) ? 2 : 0) +
+        (s.data.city === idea.data.city ? 1 : 0),
     }))
     .filter((r) => r.score > 0)
     .sort((a, b) => b.score - a.score || b.s.data.yearsActive.start - a.s.data.yearsActive.start)
@@ -74,7 +75,7 @@ export interface FilterEntry {
   slug: string;
   name: string;
   tagline: string;
-  sector: string;
+  sectors: string[];
   city: string;
   yearStart: number;
   yearEnd: number | null;
@@ -98,7 +99,7 @@ export function buildFilterIndex(
       slug: parseContentId(s.id).slug,
       name: s.data.name,
       tagline: s.data.tagline,
-      sector: s.data.sector,
+      sectors: s.data.sectors,
       city: s.data.city,
       yearStart: s.data.yearsActive.start,
       yearEnd: s.data.yearsActive.end ?? null,

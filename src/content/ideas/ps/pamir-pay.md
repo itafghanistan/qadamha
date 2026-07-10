@@ -8,7 +8,8 @@ founders:
   - name: تمنا فیضي
     role: ګډه بنسټ اېښودونکې او تخنیکي مشره
     person: tamana-faizi
-sector: fintech
+sectors:
+  - fintech
 city: کابل
 yearsActive:
   start: 2019

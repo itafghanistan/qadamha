@@ -5,7 +5,8 @@ logo: /logos/sabz-farm.svg
 founders:
   - name: Abdul Wali Sarwari
     role: Founder
-sector: agritech
+sectors:
+  - agritech
 city: Mazar-i-Sharif
 yearsActive:
   start: 2017

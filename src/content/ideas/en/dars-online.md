@@ -11,7 +11,8 @@ team:
     role: Curriculum
   - name: Sohrab Amiri
     role: Full-stack developer
-sector: edtech
+sectors:
+  - edtech
 city: Herat
 yearsActive:
   start: 2016

@@ -1,0 +1,45 @@
+---
+/** Decorative ascending-steps graphic — the "قدم‌ها" (steps) motif. Purely visual. */
+interface Props {
+  size?: number;
+}
+
+const { size = 220 } = Astro.props;
+const height = Math.round((size * 200) / 320);
+---
+
+<svg
+  viewBox="0 0 320 200"
+  width={size}
+  height={height}
+  class="steps-illustration"
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="stepGradient" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.9" />
+    </linearGradient>
+    <radialGradient id="markerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--accent-strong)" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="var(--accent-strong)" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect x="20" y="150" width="46" height="34" rx="6" fill="url(#stepGradient)" />
+  <rect x="88" y="126" width="46" height="58" rx="6" fill="url(#stepGradient)" />
+  <rect x="156" y="94" width="46" height="90" rx="6" fill="url(#stepGradient)" />
+  <rect x="224" y="54" width="46" height="130" rx="6" fill="url(#stepGradient)" />
+
+  <path
+    d="M43 150 Q66 120 111 126 Q145 100 179 94 Q210 66 247 54"
+    fill="none"
+    stroke="var(--border)"
+    stroke-width="2"
+    stroke-dasharray="2 8"
+    stroke-linecap="round"
+  />
+
+  <circle cx="247" cy="38" r="22" fill="url(#markerGlow)" />
+  <circle cx="247" cy="38" r="8" fill="var(--accent-strong)" />
+</svg>

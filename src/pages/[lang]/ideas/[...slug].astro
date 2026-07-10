@@ -227,7 +227,15 @@ const jsonLd = {
             <dd>{data.city}</dd>
 
             <SideLabel icon="sector" label={t('idea.sector')} />
-            <dd>{t(`sector.${data.sector}`)}</dd>
+            <dd class="chips">
+              {
+                data.sectors.map((s) => (
+                  <a class="chip chip-muted" href={localizePath(locale, `/categories/${s}/`)}>
+                    {t(`sector.${s}`)}
+                  </a>
+                ))
+              }
+            </dd>
 
             <SideLabel icon="founders" label={t('idea.founders')} />
             <dd>

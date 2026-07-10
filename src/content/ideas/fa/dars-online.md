@@ -11,7 +11,8 @@ team:
     role: نصاب درسی
   - name: سهراب امیری
     role: برنامه‌نویس فول‌استک
-sector: edtech
+sectors:
+  - edtech
 city: هرات
 yearsActive:
   start: 2016

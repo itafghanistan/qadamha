@@ -14,7 +14,9 @@ team:
     role: Lead rider & operations
   - name: Mariam Sadat
     role: Android developer
-sector: logistics
+sectors:
+  - logistics
+  - ecommerce
 city: Kabul
 yearsActive:
   start: 2018

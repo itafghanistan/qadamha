@@ -15,12 +15,12 @@ const t = useTranslations(locale);
 const ideas = await getIdeas(locale);
 // Localized labels go into the search haystack so users can search in their language.
 const index = buildFilterIndex(ideas, (idea) =>
-  [t(`sector.${idea.data.sector}`), t(`status.${idea.data.status}`)].join(' '),
+  [...idea.data.sectors.map((s) => t(`sector.${s}`)), t(`status.${idea.data.status}`)].join(' '),
 );
 
 const cities = [...new Set(index.map((s) => s.city))].sort();
 const years = [...new Set(index.map((s) => s.yearStart))].sort((a, b) => b - a);
-const usedSectors = SECTORS.filter((s) => index.some((e) => e.sector === s));
+const usedSectors = SECTORS.filter((s) => index.some((e) => e.sectors.includes(s)));
 const usedReasons = REASONS.filter((r) => index.some((e) => e.reasons.includes(r)));
 ---
 
@@ -127,7 +127,7 @@ const usedReasons = REASONS.filter((r) => index.some((e) => e.reasons.includes(r
       if (!entry) continue;
       const matches =
         (!q || entry.search.includes(q)) &&
-        (!sector || entry.sector === sector) &&
+        (!sector || entry.sectors.includes(sector)) &&
         (!city || entry.city === city) &&
         (!year ||
           (entry.yearStart <= Number(year) &&

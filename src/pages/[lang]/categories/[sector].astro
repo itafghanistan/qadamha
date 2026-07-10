@@ -1,0 +1,83 @@
+---
+import Base from '../../../layouts/Base.astro';
+import IdeaCard from '../../../components/IdeaCard.astro';
+import { LOCALES, formatNumber, localizePath, useTranslations, type Locale } from '../../../i18n';
+import { getIdeas, type Idea } from '../../../lib/ideas';
+import { SECTORS } from '../../../content.config';
+
+export async function getStaticPaths() {
+  // A category page exists in a language only when it has at least one idea there.
+  const paths = [];
+  for (const lang of LOCALES) {
+    const ideas = await getIdeas(lang);
+    for (const sector of SECTORS) {
+      const matching = ideas.filter((i) => i.data.sectors.includes(sector));
+      if (matching.length > 0) {
+        paths.push({ params: { lang, sector }, props: { ideas: matching } });
+      }
+    }
+  }
+  return paths;
+}
+
+const { ideas } = Astro.props as { ideas: Idea[] };
+const locale = Astro.params.lang as Locale;
+const sector = Astro.params.sector as string;
+const t = useTranslations(locale);
+const sectorName = t(`sector.${sector}`);
+const countLabel =
+  ideas.length === 1
+    ? t('ideas.results.one')
+    : t('ideas.results', { count: formatNumber(locale, ideas.length) });
+
+// hreflang only for locales where this category also exists.
+const availableLocales = [];
+for (const lang of LOCALES) {
+  const langIdeas = await getIdeas(lang);
+  if (langIdeas.some((i) => i.data.sectors.includes(sector))) availableLocales.push(lang);
+}
+---
+
+<Base
+  locale={locale}
+  title={`${sectorName} — ${t('site.name')}`}
+  description={`${sectorName} — ${countLabel}`}
+  path={`/categories/${sector}/`}
+  availableLocales={availableLocales}
+>
+  <section class="section">
+    <div class="container">
+      <p class="kicker">{t('category.kicker')}</p>
+      <h1>{sectorName}</h1>
+      <p class="category-count">{countLabel}</p>
+
+      <div class="card-grid">
+        {ideas.map((idea) => <IdeaCard idea={idea} locale={locale} />)}
+      </div>
+
+      <p class="back-link">
+        <a href={localizePath(locale, '/ideas/')}>{t('home.browseAll')}</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .kicker {
+    color: var(--accent-strong);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-block-end: 0.3rem;
+  }
+
+  .category-count {
+    color: var(--text-muted);
+    margin-block-end: 2rem;
+  }
+
+  .back-link {
+    margin-block-start: 2rem;
+  }
+</style>

@@ -178,6 +178,13 @@ code {
   border: 1px solid var(--border);
 }
 
+a.chip:hover,
+a.chip:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
 /* Cards */
 .card {
   display: block;

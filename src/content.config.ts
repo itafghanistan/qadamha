@@ -51,7 +51,8 @@ const ideas = defineCollection({
     logo: z.string().optional(),
     founders: z.array(credit).min(1),
     team: z.array(credit).optional(),
-    sector: z.enum(SECTORS),
+    /** One or more categories — an idea can belong to several at once. */
+    sectors: z.array(z.enum(SECTORS)).min(1),
     city: z.string().min(1),
     yearsActive: z.object({
       start: z.number().int().min(1900).max(2100),

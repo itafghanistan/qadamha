@@ -12,7 +12,7 @@ interface Props {
 const { idea, locale } = Astro.props;
 const t = useTranslations(locale);
 const { slug } = parseContentId(idea.id);
-const { name, tagline, logo, sector, city, yearsActive, status } = idea.data;
+const { name, tagline, logo, sectors, city, yearsActive, status } = idea.data;
 const hue = hueFromSlug(slug);
 const years =
   formatYear(locale, yearsActive.start) +
@@ -24,7 +24,7 @@ const years =
   class="card idea-card"
   href={localizePath(locale, `/ideas/${slug}/`)}
   data-slug={slug}
-  data-sector={sector}
+  data-sectors={sectors.join(' ')}
   data-city={city}
   data-year-start={yearsActive.start}
   data-year-end={yearsActive.end}
@@ -48,7 +48,7 @@ const years =
   </div>
   <div class="card-meta">
     <span class="chip">{t(`status.${status}`)}</span>
-    <span class="chip chip-muted">{t(`sector.${sector}`)}</span>
+    {sectors.map((s) => <span class="chip chip-muted">{t(`sector.${s}`)}</span>)}
     <span class="chip chip-muted">{city}</span>
     <span class="chip chip-muted">{years}</span>
   </div>

@@ -10,7 +10,7 @@ import {
 
 function idea(
   id: string,
-  data: Partial<IdeaRef['data']> & Pick<IdeaRef['data'], 'sector' | 'city'>,
+  data: Partial<IdeaRef['data']> & Pick<IdeaRef['data'], 'sectors' | 'city'>,
   body = '',
 ): IdeaRef {
   return {
@@ -55,12 +55,12 @@ describe('normalizeSearchText', () => {
 });
 
 describe('getRelated', () => {
-  const target = idea('en/a', { sector: 'fintech', city: 'Kabul' });
-  const sameSector = idea('en/b', { sector: 'fintech', city: 'Herat' });
-  const sameCity = idea('en/c', { sector: 'media', city: 'Kabul' });
-  const both = idea('en/d', { sector: 'fintech', city: 'Kabul' });
-  const unrelated = idea('en/e', { sector: 'gaming', city: 'Mazar-i-Sharif' });
-  const draft = idea('en/f', { sector: 'fintech', city: 'Kabul', draft: true });
+  const target = idea('en/a', { sectors: ['fintech'], city: 'Kabul' });
+  const sameSector = idea('en/b', { sectors: ['fintech'], city: 'Herat' });
+  const sameCity = idea('en/c', { sectors: ['media'], city: 'Kabul' });
+  const both = idea('en/d', { sectors: ['fintech'], city: 'Kabul' });
+  const unrelated = idea('en/e', { sectors: ['gaming'], city: 'Mazar-i-Sharif' });
+  const draft = idea('en/f', { sectors: ['fintech'], city: 'Kabul', draft: true });
 
   it('ranks sector+city > sector > city and excludes self, drafts, unrelated', () => {
     const related = getRelated(target, [target, sameSector, sameCity, both, unrelated, draft]);
@@ -70,15 +70,20 @@ describe('getRelated', () => {
   it('respects the limit', () => {
     expect(getRelated(target, [sameSector, sameCity, both], 1)).toHaveLength(1);
   });
+
+  it('matches when any category overlaps (multi-category ideas)', () => {
+    const multi = idea('en/g', { sectors: ['gaming', 'fintech'], city: 'Herat' });
+    expect(getRelated(target, [multi, unrelated]).map((s) => s.id)).toEqual(['en/g']);
+  });
 });
 
 describe('buildFilterIndex', () => {
   it('maps fields, builds a search haystack, and excludes drafts', () => {
-    const s = idea('en/a', { sector: 'edtech', city: 'Herat' }, 'She recorded video lessons.');
+    const s = idea('en/a', { sectors: ['edtech'], city: 'Herat' }, 'She recorded video lessons.');
     s.data.name = 'Dars Online';
     s.data.yearsActive = { start: 2016, end: 2021 };
     s.data.founders = [{ name: 'Zahra Hosseini' }];
-    const draft = idea('en/b', { sector: 'edtech', city: 'Herat', draft: true });
+    const draft = idea('en/b', { sectors: ['edtech'], city: 'Herat', draft: true });
 
     const index = buildFilterIndex([s, draft], () => 'Edtech Stopped');
     expect(index).toHaveLength(1);
@@ -96,11 +101,11 @@ describe('buildFilterIndex', () => {
 
 describe('groupByYear', () => {
   it('groups by start year, newest year first, ideas alphabetical', () => {
-    const a = idea('en/a', { sector: 'media', city: 'Kabul' });
+    const a = idea('en/a', { sectors: ['media'], city: 'Kabul' });
     a.data.yearsActive = { start: 2015 };
-    const b = idea('en/b', { sector: 'media', city: 'Kabul' });
+    const b = idea('en/b', { sectors: ['media'], city: 'Kabul' });
     b.data.yearsActive = { start: 2020 };
-    const c = idea('en/c', { sector: 'media', city: 'Kabul' });
+    const c = idea('en/c', { sectors: ['media'], city: 'Kabul' });
     c.data.yearsActive = { start: 2020 };
     c.data.name = 'Aaa';
     const groups = groupByYear([a, b, c]);

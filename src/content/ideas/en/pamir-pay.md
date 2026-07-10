@@ -8,7 +8,8 @@ founders:
   - name: Tamana Faizi
     role: Co-founder & CTO
     person: tamana-faizi
-sector: fintech
+sectors:
+  - fintech
 city: Kabul
 yearsActive:
   start: 2019

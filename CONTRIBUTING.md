@@ -36,7 +36,7 @@ next generation: we kept trying.
 Stories link across languages by **file name**. To translate
 `en/my-startup.md` into Dari, copy it to `fa/my-startup.md` (same name!),
 translate the text — including `name`, `tagline`, `city`, and roles — and
-open a pull request. Keep enum fields (`sector`, `status`, `reasons`) in
+open a pull request. Keep enum fields (`sectors`, `status`, `reasons`) in
 English; the site translates them automatically.
 
 ### Not comfortable with GitHub?
@@ -99,7 +99,7 @@ By contributing you agree that story content is licensed under
 
 داستان‌ها با **نام فایل** به هم وصل می‌شوند. برای ترجمهٔ
 `en/my-startup.md` به دری، آن را به `fa/my-startup.md` (با همان نام!) کاپی
-کنید، متن را ترجمه کنید و pull request بفرستید. فیلدهای `sector`، `status` و
+کنید، متن را ترجمه کنید و pull request بفرستید. فیلدهای `sectors`، `status` و
 `reasons` را به انگلیسی نگه دارید؛ سایت خودش ترجمه‌شان می‌کند.
 
 ### با گیت‌هاب آشنا نیستید؟
@@ -145,7 +145,7 @@ By contributing you agree that story content is licensed under
 
 کیسې د **فایل په نوم** سره نښلي. د `en/my-startup.md` د ژباړلو لپاره یې
 `ps/my-startup.md` ته (په همغه نوم!) کاپي کړئ، متن وژباړئ او pull request
-واستوئ. د `sector`، `status` او `reasons` فیلډونه په انګلیسي پرېږدئ؛ سایټ یې
+واستوئ. د `sectors`، `status` او `reasons` فیلډونه په انګلیسي پرېږدئ؛ سایټ یې
 پخپله ژباړي.
 
 ### له ګیټ هب سره بلد نه یاست؟

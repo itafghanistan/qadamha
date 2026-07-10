@@ -8,7 +8,9 @@ founders:
   - name: Hadia Rasooli
     role: Co-founder & Lead Artist
     person: hadia-rasooli
-sector: gaming
+sectors:
+  - gaming
+  - media
 city: Kabul
 yearsActive:
   start: 2020

@@ -13,7 +13,8 @@ founders:
 team: # optional — remove if not needed
   - name: Full Name
     role: What they did
-sector: other # one of: fintech, edtech, healthtech, ecommerce, media, agritech, logistics, energy, social, gaming, tooling, other
+sectors: # one or more of: fintech, edtech, healthtech, ecommerce, media, agritech, logistics, energy, social, gaming, tooling, other
+  - other
 city: Kabul
 yearsActive:
   start: 2018
