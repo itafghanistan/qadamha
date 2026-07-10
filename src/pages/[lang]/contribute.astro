@@ -1,0 +1,102 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { GITHUB_NEW_STORY_ISSUE, GITHUB_REPO } from '../../config';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const devSteps = ['s1', 's2', 's3', 's4', 's5'].map((s) => t(`contribute.dev.${s}`));
+---
+
+<Base
+  locale={locale}
+  title={`${t('contribute.title')} — ${t('site.name')}`}
+  description={t('contribute.intro')}
+  path="/contribute/"
+>
+  <section class="section">
+    <div class="container contribute">
+      <h1>{t('contribute.title')}</h1>
+      <p class="lead">{t('contribute.intro')}</p>
+
+      <div class="paths">
+        <div class="path-card">
+          <h2>{t('contribute.dev.title')}</h2>
+          <ol>
+            {devSteps.map((step) => <li>{step}</li>)}
+          </ol>
+          <a class="btn btn-ghost" href={GITHUB_REPO} rel="noopener">GitHub</a>
+        </div>
+
+        <div class="path-card">
+          <h2>{t('contribute.nondev.title')}</h2>
+          <p>{t('contribute.nondev.body')}</p>
+          <a class="btn btn-primary" href={GITHUB_NEW_STORY_ISSUE} rel="noopener">
+            {t('contribute.nondev.cta')}
+          </a>
+        </div>
+      </div>
+
+      <h2>{t('contribute.translate.title')}</h2>
+      <p>{t('contribute.translate.body')}</p>
+
+      <h2>{t('contribute.sources.title')}</h2>
+      <p>{t('contribute.sources.body')}</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contribute {
+    max-width: 50rem;
+  }
+
+  .lead {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 44rem;
+  }
+
+  .paths {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.25rem;
+    margin-block: 2rem 2.5rem;
+  }
+
+  .path-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .path-card h2 {
+    font-size: 1.2rem;
+  }
+
+  .path-card ol {
+    padding-inline-start: 1.2rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .path-card .btn {
+    align-self: start;
+    margin-block-start: auto;
+  }
+
+  .contribute > h2 {
+    color: var(--accent-strong);
+    margin-block-start: 1.5rem;
+  }
+</style>

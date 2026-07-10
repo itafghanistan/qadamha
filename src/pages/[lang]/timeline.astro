@@ -1,0 +1,137 @@
+---
+import Base from '../../layouts/Base.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import { LOCALES, formatNumber, useTranslations, type Locale } from '../../i18n';
+import { getStories } from '../../lib/stories';
+import { groupByYear } from '../../lib/story-utils';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const stories = await getStories(locale);
+const groups = groupByYear(stories);
+
+/** Years that have a historical context line in the dictionaries. */
+const CONTEXT_YEARS = [2021, 2020, 2014];
+---
+
+<Base
+  locale={locale}
+  title={`${t('timeline.title')} — ${t('site.name')}`}
+  description={t('timeline.subtitle')}
+  path="/timeline/"
+>
+  <section class="section">
+    <div class="container">
+      <h1>{t('timeline.title')}</h1>
+      <p class="page-subtitle">{t('timeline.subtitle')}</p>
+
+      <ol class="timeline">
+        {
+          groups.map((group) => (
+            <li class="timeline-year reveal">
+              <div class="year-marker">
+                <span class="year-dot" aria-hidden="true" />
+                <h2>{formatNumber(locale, group.year)}</h2>
+              </div>
+              {CONTEXT_YEARS.includes(group.year) && (
+                <p class="year-context">{t(`timeline.context.${group.year}`)}</p>
+              )}
+              <div class="card-grid">
+                {group.stories.map((story) => (
+                  <StoryCard story={story} locale={locale} />
+                ))}
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const items = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    );
+    items.forEach((el) => observer.observe(el));
+  } else {
+    items.forEach((el) => el.classList.add('is-visible'));
+  }
+</script>
+
+<style>
+  .page-subtitle {
+    color: var(--text-muted);
+    max-width: 44rem;
+    margin-block-end: 2.5rem;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    padding-inline-start: 1.5rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.5rem 0;
+    inset-inline-start: 0.3rem;
+    inline-size: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--border));
+  }
+
+  .timeline-year {
+    margin-block-end: 3rem;
+    position: relative;
+  }
+
+  .year-marker {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .year-dot {
+    position: absolute;
+    inset-inline-start: -1.5rem;
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    transform: translateX(-0.28rem);
+  }
+
+  [dir='rtl'] .year-dot {
+    transform: translateX(0.28rem);
+  }
+
+  .year-marker h2 {
+    color: var(--accent-strong);
+    margin: 0 0 0.5rem;
+  }
+
+  .year-context {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-block-end: 1.25rem;
+    max-width: 40rem;
+  }
+</style>

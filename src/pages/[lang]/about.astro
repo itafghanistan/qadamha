@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { GITHUB_REPO } from '../../config';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+---
+
+<Base
+  locale={locale}
+  title={`${t('about.title')} — ${t('site.name')}`}
+  description={t('about.mission.p1')}
+  path="/about/"
+>
+  <section class="section">
+    <div class="container about">
+      <h1>{t('about.title')}</h1>
+
+      <h2>{t('about.mission.title')}</h2>
+      <p>{t('about.mission.p1')}</p>
+      <p>{t('about.mission.p2')}</p>
+      <p class="pull">{t('about.mission.p3')}</p>
+
+      <h2>{t('about.what.title')}</h2>
+      <p>{t('about.what.p1')}</p>
+
+      <h2>{t('about.license.title')}</h2>
+      <p>{t('about.license.p1')}</p>
+      <p><a href={GITHUB_REPO} rel="noopener">{t('footer.openSource')}</a></p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about {
+    max-width: 44rem;
+  }
+
+  .about h2 {
+    margin-block-start: 2.25rem;
+    color: var(--accent-strong);
+  }
+
+  .pull {
+    border-inline-start: 3px solid var(--accent);
+    padding-inline-start: 1rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+</style>
