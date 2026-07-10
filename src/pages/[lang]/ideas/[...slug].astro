@@ -51,6 +51,19 @@ const years =
   '–' +
   (data.yearsActive.end ? formatYear(locale, data.yearsActive.end) : t('idea.present'));
 
+const hue = hueFromSlug(slug);
+
+/** The original site's domain, extracted from a Wayback-style URL when possible. */
+function archivedDomain(archiveUrl: string): string {
+  const innerStart = archiveUrl.indexOf('http', 10);
+  const candidate = innerStart > 0 ? archiveUrl.slice(innerStart) : archiveUrl;
+  try {
+    return new URL(candidate).hostname.replace(/^www\./, '');
+  } catch {
+    return new URL(archiveUrl).hostname.replace(/^www\./, '');
+  }
+}
+
 const path = `/ideas/${slug}/`;
 const pageUrl = new URL(localizePath(locale, path), SITE_URL).href;
 const shareText = `${data.name} — ${data.tagline}`;
@@ -89,35 +102,20 @@ const jsonLd = {
     <div class="container idea-layout">
       <div class="idea-main">
         <header class="idea-header">
+          <h1>{data.name}</h1>
+          <p class="idea-tagline">{data.tagline}</p>
           {
-            data.logo ? (
-              <img class="idea-logo" src={data.logo} alt="" width="88" height="88" />
-            ) : (
-              <span
-                class="idea-logo idea-monogram"
-                style={`--logo-hue: ${hueFromSlug(slug)}`}
-                aria-hidden="true"
-              >
-                {data.name.trim().charAt(0).toUpperCase()}
-              </span>
+            otherLocales.length > 0 && (
+              <p class="translations">
+                {t('idea.alsoAvailable')}
+                {otherLocales.map((l) => (
+                  <a href={localizePath(l, path)} lang={LOCALE_META[l].htmlLang} class="chip">
+                    {LOCALE_META[l].nativeName}
+                  </a>
+                ))}
+              </p>
             )
           }
-          <div>
-            <h1>{data.name}</h1>
-            <p class="idea-tagline">{data.tagline}</p>
-            {
-              otherLocales.length > 0 && (
-                <p class="translations">
-                  {t('idea.alsoAvailable')}
-                  {otherLocales.map((l) => (
-                    <a href={localizePath(l, path)} lang={LOCALE_META[l].htmlLang} class="chip">
-                      {LOCALE_META[l].nativeName}
-                    </a>
-                  ))}
-                </p>
-              )
-            }
-          </div>
         </header>
 
         <div class="prose">
@@ -160,112 +158,152 @@ const jsonLd = {
       </div>
 
       <aside class="idea-side">
-        <dl>
-          <dt>{t('idea.status')}</dt>
-          <dd><span class="chip">{t(`status.${data.status}`)}</span></dd>
-
-          <dt>{t('idea.reasons')}</dt>
-          <dd class="chips">
-            {data.reasons.map((r) => <span class="chip chip-muted">{t(`reason.${r}`)}</span>)}
-          </dd>
-
-          <dt>{t('idea.years')}</dt>
-          <dd>{years}</dd>
-
-          <dt>{t('idea.city')}</dt>
-          <dd>{data.city}</dd>
-
-          <dt>{t('idea.sector')}</dt>
-          <dd>{t(`sector.${data.sector}`)}</dd>
+        <div class="side-card">
+          <div class="side-brand">
+            {
+              data.logo ? (
+                <img class="idea-logo" src={data.logo} alt="" width="96" height="96" />
+              ) : (
+                <span
+                  class="idea-logo idea-monogram"
+                  style={`--logo-hue: ${hue}`}
+                  aria-hidden="true"
+                >
+                  {data.name.trim().charAt(0).toUpperCase()}
+                </span>
+              )
+            }
+          </div>
 
           {
             data.archive && (
-              <>
-                <dt>{t('idea.archive')}</dt>
-                <dd>
-                  <a class="archive-link" href={data.archive} rel="noopener">
-                    {new URL(data.archive).hostname.replace(/^www\./, '')} ↗
-                  </a>
-                </dd>
-              </>
+              <a class="archive-card" href={data.archive} rel="noopener" target="_blank">
+                <span class="archive-chrome" aria-hidden="true">
+                  <span class="archive-dot"></span>
+                  <span class="archive-dot"></span>
+                  <span class="archive-dot"></span>
+                  <span class="archive-url" dir="ltr">{archivedDomain(data.archive)}</span>
+                </span>
+                {
+                  data.archiveImage ? (
+                    <span class="archive-screen has-image" aria-hidden="true">
+                      <img src={data.archiveImage} alt="" loading="lazy" />
+                    </span>
+                  ) : (
+                    <span class="archive-screen" aria-hidden="true" style={`--logo-hue: ${hue}`}>
+                      <span class="skeleton-hero">
+                        {data.logo ? (
+                          <img src={data.logo} alt="" width="26" height="26" />
+                        ) : (
+                          <span class="skeleton-logo">{data.name.trim().charAt(0).toUpperCase()}</span>
+                        )}
+                        <span class="skeleton-bar w-40"></span>
+                      </span>
+                      <span class="skeleton-bar w-90"></span>
+                      <span class="skeleton-bar w-75"></span>
+                      <span class="skeleton-bar w-55 accent"></span>
+                    </span>
+                  )
+                }
+                <span class="archive-cta">{t('idea.archive')} ↗</span>
+              </a>
             )
           }
 
-          <dt>{t('idea.founders')}</dt>
-          <dd>
-            <ul class="people-list">
-              {
-                founders.map((f) => (
-                  <li>
-                    <PersonLink
-                      locale={locale}
-                      person={f.profile}
-                      name={f.name}
-                      link={f.link}
-                    />
-                    {f.role && <span class="role"> — {f.role}</span>}
-                  </li>
-                ))
-              }
-            </ul>
-          </dd>
+          <dl>
+            <dt>{t('idea.status')}</dt>
+            <dd><span class="chip">{t(`status.${data.status}`)}</span></dd>
 
-          {
-            team.length > 0 && (
-              <>
-                <dt>{t('idea.team')}</dt>
-                <dd>
-                  <ul class="people-list">
-                    {team.map((m) => (
-                      <li>
-                        <PersonLink locale={locale} person={m.profile} name={m.name} />
-                        {m.role && <span class="role"> — {m.role}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </>
-            )
-          }
+            <dt>{t('idea.reasons')}</dt>
+            <dd class="chips">
+              {data.reasons.map((r) => <span class="chip chip-muted">{t(`reason.${r}`)}</span>)}
+            </dd>
 
-          {
-            data.links && data.links.length > 0 && (
-              <>
-                <dt>{t('idea.links')}</dt>
-                <dd>
-                  <ul>
-                    {data.links.map((l) => (
-                      <li>
-                        <a href={l.url} rel="noopener">
-                          {l.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </>
-            )
-          }
+            <dt>{t('idea.years')}</dt>
+            <dd>{years}</dd>
 
-          {
-            data.sources && data.sources.length > 0 && (
-              <>
-                <dt>{t('idea.sources')}</dt>
-                <dd>
-                  <ul>
-                    {data.sources.map((s) => (
-                      <li>
-                        <a href={s.url} rel="noopener">
-                          {s.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </>
-            )
-          }
-        </dl>
+            <dt>{t('idea.city')}</dt>
+            <dd>{data.city}</dd>
+
+            <dt>{t('idea.sector')}</dt>
+            <dd>{t(`sector.${data.sector}`)}</dd>
+
+            <dt>{t('idea.founders')}</dt>
+            <dd>
+              <ul class="people-list">
+                {
+                  founders.map((f) => (
+                    <li>
+                      <PersonLink
+                        locale={locale}
+                        person={f.profile}
+                        name={f.name}
+                        link={f.link}
+                      />
+                      {f.role && <span class="role"> — {f.role}</span>}
+                    </li>
+                  ))
+                }
+              </ul>
+            </dd>
+
+            {
+              team.length > 0 && (
+                <>
+                  <dt>{t('idea.team')}</dt>
+                  <dd>
+                    <ul class="people-list">
+                      {team.map((m) => (
+                        <li>
+                          <PersonLink locale={locale} person={m.profile} name={m.name} />
+                          {m.role && <span class="role"> — {m.role}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </>
+              )
+            }
+
+            {
+              data.links && data.links.length > 0 && (
+                <>
+                  <dt>{t('idea.links')}</dt>
+                  <dd>
+                    <ul>
+                      {data.links.map((l) => (
+                        <li>
+                          <a href={l.url} rel="noopener">
+                            {l.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </>
+              )
+            }
+
+            {
+              data.sources && data.sources.length > 0 && (
+                <>
+                  <dt>{t('idea.sources')}</dt>
+                  <dd>
+                    <ul>
+                      {data.sources.map((s) => (
+                        <li>
+                          <a href={s.url} rel="noopener">
+                            {s.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </>
+              )
+            }
+          </dl>
+        </div>
       </aside>
     </div>
 
@@ -308,36 +346,25 @@ const jsonLd = {
 </script>
 
 <style>
+  /* Sidebar sits in the first column: left in LTR, right (start side) in RTL. */
   .idea-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 17rem;
+    grid-template-columns: 20rem minmax(0, 1fr);
     gap: 3rem;
   }
 
+  .idea-side {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .idea-main {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .idea-header {
-    display: flex;
-    gap: 1.25rem;
-    align-items: flex-start;
     margin-block-end: 1.5rem;
-  }
-
-  .idea-logo {
-    inline-size: 88px;
-    block-size: 88px;
-    border-radius: 20px;
-    flex-shrink: 0;
-    object-fit: cover;
-    background: var(--bg-soft);
-  }
-
-  .idea-monogram {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: hsl(var(--logo-hue) 42% 26%);
-    color: hsl(var(--logo-hue) 75% 78%);
-    font-size: 2.6rem;
-    font-weight: 800;
   }
 
   .idea-tagline {
@@ -354,15 +381,180 @@ const jsonLd = {
     color: var(--text-muted);
   }
 
-  .idea-side dl {
+  .side-card {
     position: sticky;
     inset-block-start: 4.5rem;
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.25rem;
-    margin: 0;
+    padding: 1.4rem;
     font-size: 0.92rem;
+  }
+
+  .side-brand {
+    display: flex;
+    justify-content: center;
+    margin-block-end: 1.2rem;
+  }
+
+  .idea-logo {
+    inline-size: 96px;
+    block-size: 96px;
+    border-radius: 22px;
+    object-fit: cover;
+    background: var(--bg-soft);
+  }
+
+  .idea-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--logo-hue) 42% 26%);
+    color: hsl(var(--logo-hue) 75% 78%);
+    font-size: 2.8rem;
+    font-weight: 800;
+  }
+
+  /* Archive preview — a tiny browser window that begs to be opened. */
+  .archive-card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-block-end: 1.3rem;
+    background: var(--bg);
+    transition:
+      border-color 0.18s ease,
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .archive-card:hover,
+  .archive-card:focus-visible {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -14px rgba(232, 163, 61, 0.5);
+    text-decoration: none;
+  }
+
+  .archive-chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.45rem 0.6rem;
+    background: var(--bg-soft);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .archive-dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .archive-url {
+    flex: 1;
+    margin-inline-start: 0.4rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.7rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+
+  .archive-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.9rem;
+    background:
+      radial-gradient(14rem 8rem at 80% -20%, hsl(var(--logo-hue, 40) 45% 30% / 0.35), transparent),
+      var(--bg-raised);
+    min-block-size: 6.5rem;
+  }
+
+  .archive-screen.has-image {
+    padding: 0;
+    min-block-size: 0;
+  }
+
+  .archive-screen.has-image img {
+    display: block;
+    inline-size: 100%;
+    max-block-size: 10rem;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .skeleton-hero {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-end: 0.2rem;
+  }
+
+  .skeleton-hero img {
+    border-radius: 6px;
+  }
+
+  .skeleton-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 26px;
+    block-size: 26px;
+    border-radius: 6px;
+    background: hsl(var(--logo-hue) 42% 30%);
+    color: hsl(var(--logo-hue) 75% 80%);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .skeleton-bar {
+    display: block;
+    block-size: 0.5rem;
+    border-radius: 999px;
+    background: var(--bg-soft);
+  }
+
+  .skeleton-bar.accent {
+    background: var(--accent-soft);
+  }
+
+  .skeleton-bar.w-40 {
+    inline-size: 40%;
+  }
+
+  .skeleton-bar.w-55 {
+    inline-size: 55%;
+  }
+
+  .skeleton-bar.w-75 {
+    inline-size: 75%;
+  }
+
+  .skeleton-bar.w-90 {
+    inline-size: 90%;
+  }
+
+  .archive-cta {
+    display: block;
+    padding: 0.55rem 0.75rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+  }
+
+  .idea-side dl {
+    margin: 0;
   }
 
   .idea-side dt {
@@ -397,10 +589,6 @@ const jsonLd = {
   .idea-side .role {
     color: var(--text-muted);
     font-size: 0.85rem;
-  }
-
-  .archive-link {
-    font-weight: 700;
   }
 
   .chips {
@@ -454,12 +642,14 @@ const jsonLd = {
       gap: 1.5rem;
     }
 
-    .idea-side dl {
-      position: static;
+    .idea-side,
+    .idea-main {
+      grid-column: auto;
+      grid-row: auto;
     }
 
-    .idea-header {
-      flex-direction: column;
+    .side-card {
+      position: static;
     }
   }
 </style>

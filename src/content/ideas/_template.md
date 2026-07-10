@@ -22,6 +22,7 @@ status: stopped # one of: stopped, paused, incomplete
 reasons: # one or more of: war, funding, migration, sanctions, market, infrastructure, regulation, team, personal, other
   - war
 # archive: https://web.archive.org/web/…   # optional — snapshot of the product, shown prominently
+# archiveImage: /screenshots/my-app.png    # optional — screenshot shown in the archive preview card (file under public/)
 links: # optional — the product itself, archived pages, app stores
   - label: Archived website
     url: https://web.archive.org/…

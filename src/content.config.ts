@@ -61,6 +61,8 @@ const ideas = defineCollection({
     reasons: z.array(z.enum(REASONS)).min(1),
     /** Snapshot of the product on the Wayback Machine (or similar) — shown prominently in the sidebar. */
     archive: z.string().url().optional(),
+    /** Screenshot of the product (path under public/, e.g. "/screenshots/my-app.png") shown inside the archive preview card. */
+    archiveImage: z.string().optional(),
     links: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
     sources: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
     featured: z.boolean().default(false),
