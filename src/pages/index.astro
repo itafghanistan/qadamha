@@ -45,11 +45,13 @@ const targets = Object.fromEntries(LOCALES.map((l) => [l, localizePath(l)]));
         } catch (e) {
           /* storage unavailable (private mode) */
         }
+        // First browser language we support wins — the list is ordered by preference.
         var langs = navigator.languages || [navigator.language || ''];
         for (var i = 0; i < langs.length; i++) {
           var l = String(langs[i]).toLowerCase();
           if (l.indexOf('fa') === 0 || l.indexOf('prs') === 0) return go('fa');
           if (l.indexOf('ps') === 0) return go('ps');
+          if (l.indexOf('en') === 0) return go('en');
         }
         try {
           var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
