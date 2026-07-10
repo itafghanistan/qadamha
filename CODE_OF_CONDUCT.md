@@ -20,6 +20,6 @@ each other here.
 
 Maintainers may edit or remove content and comments that violate these
 standards, and block repeat offenders. To report a problem privately, email
-the maintainers at qadamha@lajward.dev.
+the maintainers at rashid.obaidi2003@gmail.com.
 
 *Adapted in spirit from the Contributor Covenant.*
