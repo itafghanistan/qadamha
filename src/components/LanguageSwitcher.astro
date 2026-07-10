@@ -1,0 +1,61 @@
+---
+import type { Locale } from '../i18n';
+import { LOCALES, LOCALE_META, localizePath, useTranslations } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  /** Current path without locale prefix. */
+  path: string;
+  /** Locales in which the current page exists; others link to their home. */
+  availableLocales?: Locale[];
+}
+
+const { locale, path, availableLocales = [...LOCALES] } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<nav class="lang-switcher" aria-label={t('nav.language')}>
+  {
+    LOCALES.map((l) =>
+      l === locale ? (
+        <span class="lang-current" aria-current="true">
+          {LOCALE_META[l].nativeName}
+        </span>
+      ) : (
+        <a href={availableLocales.includes(l) ? localizePath(l, path) : localizePath(l)} lang={LOCALE_META[l].htmlLang}>
+          {LOCALE_META[l].nativeName}
+        </a>
+      ),
+    )
+  }
+</nav>
+
+<style>
+  .lang-switcher {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    font-size: 0.88rem;
+  }
+
+  .lang-switcher a,
+  .lang-current {
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+  }
+
+  .lang-switcher a:hover,
+  .lang-switcher a:focus-visible {
+    color: var(--accent-strong);
+    text-decoration: none;
+    border-color: var(--border);
+  }
+
+  .lang-current {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+</style>

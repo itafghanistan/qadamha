@@ -1,0 +1,54 @@
+---
+import type { Locale } from '../i18n';
+import { useTranslations } from '../i18n';
+import { GITHUB_REPO } from '../config';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-tagline">
+      <span class="footer-mark" aria-hidden="true">قدم‌ها</span>
+      {t('footer.tagline')}
+    </p>
+    <p class="footer-meta">
+      <a href={GITHUB_REPO} rel="noopener">{t('footer.openSource')}</a>
+      <span aria-hidden="true"> · </span>
+      <span>{t('footer.license')}</span>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: 1px solid var(--border);
+    margin-block-start: 4rem;
+    padding-block: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-mark {
+    color: var(--accent);
+    font-weight: 800;
+    margin-inline-end: 0.5rem;
+  }
+
+  .footer-tagline,
+  .footer-meta {
+    margin: 0;
+  }
+</style>

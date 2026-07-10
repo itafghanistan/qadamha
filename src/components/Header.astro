@@ -1,0 +1,109 @@
+---
+import type { Locale } from '../i18n';
+import { localizePath, useTranslations } from '../i18n';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  availableLocales?: Locale[];
+}
+
+const { locale, path, availableLocales } = Astro.props;
+const t = useTranslations(locale);
+
+const links = [
+  { href: localizePath(locale, '/stories/'), label: t('nav.stories') },
+  { href: localizePath(locale, '/timeline/'), label: t('nav.timeline') },
+  { href: localizePath(locale, '/about/'), label: t('nav.about') },
+  { href: localizePath(locale, '/contribute/'), label: t('nav.contribute') },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={localizePath(locale)}>
+      <span class="brand-mark">قدم‌ها</span>
+      <span class="brand-name">Qadamha</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      {links.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
+    <LanguageSwitcher locale={locale} path={path} availableLocales={availableLocales} />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-block-end: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    padding-block: 0.7rem;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    color: var(--text);
+  }
+
+  .brand:hover,
+  .brand:focus-visible {
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .brand-name {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-inline-start: auto;
+  }
+
+  .site-nav a {
+    color: var(--text);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+  }
+
+  .site-nav a:hover,
+  .site-nav a:focus-visible {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    text-decoration: none;
+  }
+
+  @media (max-width: 40rem) {
+    .brand-name {
+      display: none;
+    }
+
+    .site-nav {
+      order: 3;
+      inline-size: 100%;
+      margin-inline-start: 0;
+    }
+  }
+</style>

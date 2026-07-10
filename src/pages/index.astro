@@ -1,0 +1,134 @@
+---
+import '@fontsource-variable/vazirmatn';
+import '../styles/global.css';
+import { LOCALES, LOCALE_META, localizePath, useTranslations } from '../i18n';
+import { SITE_URL } from '../config';
+
+const tEn = useTranslations('en');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <title>Qadamha (قدم‌ها) — Every attempt was a step</title>
+    <meta name="description" content={tEn('site.description')} />
+    <link rel="canonical" href={SITE_URL + '/'} />
+    {
+      LOCALES.map((l) => (
+        <link
+          rel="alternate"
+          hreflang={LOCALE_META[l].htmlLang}
+          href={new URL(localizePath(l), SITE_URL).href}
+        />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={new URL('/en/', SITE_URL).href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Qadamha (قدم‌ها)" />
+    <meta property="og:description" content={tEn('site.description')} />
+    <meta property="og:image" content={new URL('/og/site-en.png', SITE_URL).href} />
+  </head>
+  <body>
+    <main class="landing">
+      <p class="landing-mark">قدم‌ها</p>
+      <h1 class="landing-name">Qadamha</h1>
+      <div class="landing-langs">
+        {
+          LOCALES.map((l) => (
+            <a
+              class="landing-lang"
+              href={localizePath(l)}
+              lang={LOCALE_META[l].htmlLang}
+              dir={LOCALE_META[l].dir}
+            >
+              <strong>{LOCALE_META[l].nativeName}</strong>
+              <span>{useTranslations(l)('site.tagline')}</span>
+            </a>
+          ))
+        }
+      </div>
+      <p class="landing-desc">{tEn('site.description')}</p>
+    </main>
+  </body>
+</html>
+
+<style>
+  .landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem 1.25rem;
+    text-align: center;
+    background:
+      radial-gradient(50rem 25rem at 50% -10%, rgba(232, 163, 61, 0.1), transparent);
+  }
+
+  .landing-mark {
+    font-size: clamp(3rem, 9vw, 5rem);
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .landing-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin: 0 0 1.5rem;
+  }
+
+  .landing-langs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    inline-size: min(100%, 46rem);
+  }
+
+  .landing-lang {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1.4rem 1.2rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    transition:
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .landing-lang:hover,
+  .landing-lang:focus-visible {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  .landing-lang strong {
+    font-size: 1.35rem;
+    color: var(--accent-strong);
+  }
+
+  .landing-lang span {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .landing-desc {
+    max-width: 38rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-block-start: 2rem;
+  }
+</style>

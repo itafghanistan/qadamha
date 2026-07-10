@@ -1,0 +1,145 @@
+---
+import Base from '../../layouts/Base.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import { LOCALES, formatNumber, localizePath, useTranslations, type Locale } from '../../i18n';
+import { getStories } from '../../lib/stories';
+import { SITE_URL, GITHUB_REPO } from '../../config';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const stories = await getStories(locale);
+const featured = stories.filter((s) => s.data.featured).slice(0, 3);
+const fallback = featured.length > 0 ? featured : stories.slice(0, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Qadamha',
+  alternateName: 'قدم‌ها',
+  url: SITE_URL,
+  sameAs: [GITHUB_REPO],
+  description: t('site.description'),
+};
+---
+
+<Base
+  locale={locale}
+  title={`${t('site.name')} — ${t('site.tagline')}`}
+  description={t('site.description')}
+  path="/"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <section class="hero">
+    <div class="container">
+      <p class="kicker">{t('home.hero.kicker')}</p>
+      <h1>{t('home.hero.title')}</h1>
+      <p class="hero-subtitle">{t('home.hero.subtitle')}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href={localizePath(locale, '/stories/')}>{t('home.hero.cta')}</a>
+        <a class="btn btn-ghost" href={localizePath(locale, '/contribute/')}
+          >{t('home.contribute.cta')}</a
+        >
+      </div>
+      <p class="step-count">
+        {t('home.count', { count: formatNumber(locale, stories.length) })}
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>{t('home.featured')}</h2>
+      <div class="card-grid">
+        {fallback.map((story) => <StoryCard story={story} locale={locale} />)}
+      </div>
+      <p class="browse-all">
+        <a href={localizePath(locale, '/stories/')}>{t('home.browseAll')}</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section letter">
+    <div class="container letter-inner">
+      <h2>{t('home.message.title')}</h2>
+      <p>{t('home.message.p1')}</p>
+      <p>{t('home.message.p2')}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container contribute-band">
+      <h2>{t('home.contribute.title')}</h2>
+      <p>{t('home.contribute.body')}</p>
+      <a class="btn btn-primary" href={localizePath(locale, '/contribute/')}
+        >{t('home.contribute.cta')}</a
+      >
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-block: 5rem 3.5rem;
+    background:
+      radial-gradient(60rem 30rem at 80% -10%, rgba(232, 163, 61, 0.09), transparent),
+      radial-gradient(40rem 20rem at 10% 110%, rgba(232, 163, 61, 0.05), transparent);
+    text-align: center;
+  }
+
+  .kicker {
+    color: var(--accent-strong);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-block-end: 0.75rem;
+  }
+
+  .hero-subtitle {
+    max-width: 42rem;
+    margin-inline: auto;
+    color: var(--text-muted);
+    font-size: 1.15rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-block: 1.75rem 2.25rem;
+  }
+
+  .step-count {
+    color: var(--accent-strong);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .browse-all {
+    margin-block-start: 1.5rem;
+    text-align: end;
+  }
+
+  .letter {
+    background: var(--bg-raised);
+    border-block: 1px solid var(--border);
+  }
+
+  .letter-inner {
+    max-width: 44rem;
+    font-size: 1.1rem;
+  }
+
+  .letter h2 {
+    color: var(--accent-strong);
+  }
+
+  .contribute-band {
+    text-align: center;
+    max-width: 40rem;
+  }
+</style>

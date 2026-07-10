@@ -1,0 +1,262 @@
+/* Qadamha global styles.
+   Dark, warm palette — night sky and lantern light.
+   All spacing uses logical properties so RTL (Dari/Pashto) mirrors for free. */
+
+:root {
+  --bg: #0d1321;
+  --bg-raised: #151d31;
+  --bg-soft: #1a2340;
+  --border: #2a3554;
+  --text: #ece9e2;
+  --text-muted: #a2a7bd;
+  --accent: #e8a33d;
+  --accent-strong: #f2b755;
+  --accent-soft: rgba(232, 163, 61, 0.13);
+  --link: #f2b755;
+  --radius: 10px;
+  --content-width: 72rem;
+  --font-body:
+    'Vazirmatn Variable', 'Vazirmatn', -apple-system, 'Segoe UI', Roboto, 'Noto Sans Arabic',
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.3;
+  text-wrap: balance;
+  margin-block: 0 0.6em;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 4.5vw, 3rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+p {
+  margin-block: 0 1em;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+code {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  font-size: 0.9em;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Layout helpers */
+.container {
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.section {
+  padding-block: 3.5rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #16120a;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--accent-strong);
+  text-decoration: none;
+}
+
+.btn-ghost {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+/* Chips / badges */
+.chip {
+  display: inline-block;
+  padding: 0.1rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip-muted {
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Cards */
+.card {
+  display: block;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  color: var(--text);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.card h3 {
+  margin-block-end: 0.25rem;
+}
+
+.card .tagline {
+  color: var(--text-muted);
+  margin-block-end: 0.75rem;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1.25rem;
+}
+
+/* Prose (story bodies) */
+.prose {
+  max-width: 44rem;
+}
+
+.prose > blockquote:first-child {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.2rem;
+  font-style: normal;
+  color: var(--text);
+}
+
+/* Reveal animation (timeline & cards) */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Small screens */
+@media (max-width: 40rem) {
+  body {
+    font-size: 1rem;
+  }
+
+  .section {
+    padding-block: 2.25rem;
+  }
+}
