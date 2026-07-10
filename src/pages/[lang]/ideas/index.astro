@@ -5,6 +5,7 @@ import { LOCALES, formatYear, useTranslations, type Locale } from '../../../i18n
 import { getIdeas } from '../../../lib/ideas';
 import { buildFilterIndex } from '../../../lib/content-utils';
 import { SECTORS, STATUSES, REASONS } from '../../../content.config';
+import { jsonScript } from '../../../lib/security';
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -92,7 +93,7 @@ const usedReasons = REASONS.filter((r) => index.some((e) => e.reasons.includes(r
 
       <p class="no-results" id="no-results" hidden>{t('ideas.noResults')}</p>
 
-      <script type="application/json" id="filter-index" set:html={JSON.stringify(index)} />
+      <script type="application/json" id="filter-index" set:html={jsonScript(index)} />
     </div>
   </section>
 </Base>

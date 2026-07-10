@@ -9,6 +9,7 @@ import { getIdeas } from '../../lib/ideas';
 import { getPosts } from '../../lib/posts';
 import { parseContentId } from '../../lib/content-utils';
 import { SITE_URL, GITHUB_REPO } from '../../config';
+import { jsonScript } from '../../lib/security';
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -39,7 +40,7 @@ const jsonLd = {
   description={t('site.description')}
   path="/"
 >
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script slot="head" type="application/ld+json" set:html={jsonScript(jsonLd)} />
 
   <section class="hero">
     <div class="container">

@@ -2,16 +2,12 @@
 import '@fontsource-variable/vazirmatn';
 import '../styles/global.css';
 import { LOCALES, LOCALE_META, localizePath, useTranslations } from '../i18n';
-import { SITE_URL, GITHUB_REPO, withBase } from '../config';
-import { getCollection } from 'astro:content';
-import { parseContentId } from '../lib/content-utils';
+import { SITE_URL, withBase } from '../config';
 
 const tEn = useTranslations('en');
-const ideaCount = new Set(
-  (await getCollection('ideas', (e) => !e.data.draft)).map((e) => parseContentId(e.id).slug),
-).size;
 
-const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوتل' };
+// Locale → site-relative URL (includes the deploy base path).
+const targets = Object.fromEntries(LOCALES.map((l) => [l, localizePath(l)]));
 ---
 
 <!doctype html>
@@ -23,7 +19,7 @@ const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوت
     <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
     <title>Qadamha (قدم‌ها) — Every attempt was a step</title>
     <meta name="description" content={tEn('site.description')} />
-    <link rel="canonical" href={SITE_URL + '/'} />
+    <link rel="canonical" href={new URL(withBase('/'), SITE_URL).href} />
     {
       LOCALES.map((l) => (
         <link
@@ -33,192 +29,79 @@ const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوت
         />
       ))
     }
-    <link rel="alternate" hreflang="x-default" href={new URL('/en/', SITE_URL).href} />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Qadamha (قدم‌ها)" />
-    <meta property="og:description" content={tEn('site.description')} />
-    <meta property="og:image" content={new URL(withBase('/og/site-en.png'), SITE_URL).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL(localizePath('en'), SITE_URL).href} />
+
+    <script is:inline define:vars={{ targets }}>
+      // Pick the visitor's language and redirect immediately.
+      // Priority: their saved choice → fa/ps browser language →
+      // Afghanistan/Iran timezone (≈ location) → English.
+      (function () {
+        function go(locale) {
+          location.replace(targets[locale]);
+        }
+        try {
+          var saved = localStorage.getItem('qadamha-lang');
+          if (saved && targets[saved]) return go(saved);
+        } catch (e) {
+          /* storage unavailable (private mode) */
+        }
+        var langs = navigator.languages || [navigator.language || ''];
+        for (var i = 0; i < langs.length; i++) {
+          var l = String(langs[i]).toLowerCase();
+          if (l.indexOf('fa') === 0 || l.indexOf('prs') === 0) return go('fa');
+          if (l.indexOf('ps') === 0) return go('ps');
+        }
+        try {
+          var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          if (tz === 'Asia/Kabul' || tz === 'Asia/Tehran') return go('fa');
+        } catch (e) {
+          /* older browsers */
+        }
+        go('en');
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content={`0;url=${targets.en}`} />
+    </noscript>
   </head>
   <body>
-    <main class="landing">
-      <div class="landing-inner">
-        <header class="landing-brand">
-          <svg class="landing-glyph" viewBox="0 0 64 64" width="52" height="52" aria-hidden="true">
-            <path
-              d="M10 52 V42 h12 V32 h12 V22 h12 V12 h8 V52 Z"
-              fill="none"
-              stroke="var(--accent)"
-              stroke-width="3.5"
-              stroke-linejoin="round"></path>
-          </svg>
-          <h1 class="landing-mark" lang="fa" dir="rtl">قدم‌ها</h1>
-          <p class="landing-name" aria-hidden="true">Q&nbsp;A&nbsp;D&nbsp;A&nbsp;M&nbsp;H&nbsp;A</p>
-        </header>
-
-        <p class="landing-taglines">
-          <span lang="en">Every attempt was a step.</span>
-          <span lang="fa" dir="rtl">هر تلاش، یک قدم بود.</span>
-          <span lang="ps" dir="rtl">هره هڅه یو ګام و.</span>
-        </p>
-
-        <nav class="landing-langs" aria-label="Choose your language">
-          {
-            LOCALES.map((l) => (
-              <a
-                class="landing-lang"
-                href={localizePath(l)}
-                lang={LOCALE_META[l].htmlLang}
-                dir={LOCALE_META[l].dir}
-              >
-                <span class="lang-name">{LOCALE_META[l].nativeName}</span>
-                <span class="lang-tagline">{useTranslations(l)('site.description')}</span>
-                <span class="lang-cta">{CTA[l]}</span>
-              </a>
-            ))
-          }
-        </nav>
-
-        <footer class="landing-foot">
-          <span>{ideaCount} ideas · 3 languages</span>
-          <span aria-hidden="true">·</span>
-          <a href={GITHUB_REPO} rel="noopener">Open source</a>
-          <span aria-hidden="true">·</span>
-          <span>MIT + CC BY-SA 4.0</span>
-        </footer>
-      </div>
+    <!-- Visible only for the instant before the redirect, or if it fails. -->
+    <main class="redirecting">
+      <p class="mark" aria-hidden="true">قدم‌ها</p>
+      <nav aria-label="Choose your language">
+        {
+          LOCALES.map((l) => (
+            <a href={targets[l]} lang={LOCALE_META[l].htmlLang} dir={LOCALE_META[l].dir}>
+              {LOCALE_META[l].nativeName}
+            </a>
+          ))
+        }
+      </nav>
     </main>
   </body>
 </html>
 
 <style>
-  .landing {
+  .redirecting {
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1.25rem;
-    background:
-      radial-gradient(55rem 30rem at 50% -12%, rgba(232, 163, 61, 0.14), transparent 60%),
-      radial-gradient(40rem 24rem at 85% 105%, rgba(232, 163, 61, 0.05), transparent 60%),
-      var(--bg);
+    gap: 1.5rem;
   }
 
-  .landing-inner {
-    inline-size: min(100%, 62rem);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 2.25rem;
-  }
-
-  .landing-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .landing-mark {
-    font-size: clamp(3.2rem, 9vw, 5.2rem);
+  .mark {
+    font-size: 3rem;
     font-weight: 800;
     color: var(--accent);
     margin: 0;
-    line-height: 1.15;
-    text-shadow: 0 0 60px rgba(232, 163, 61, 0.35);
   }
 
-  .landing-name {
-    font-size: 0.95rem;
+  .redirecting nav {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 1.15rem;
     font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.45em;
-    margin: 0;
-  }
-
-  .landing-taglines {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.4rem 2rem;
-    color: var(--text-muted);
-    font-size: 1.02rem;
-    margin: 0;
-  }
-
-  .landing-langs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 1.1rem;
-    inline-size: 100%;
-  }
-
-  .landing-lang {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 1.6rem 1.4rem 1.3rem;
-    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    color: var(--text);
-    text-align: start;
-    transition:
-      border-color 0.18s ease,
-      transform 0.18s ease,
-      box-shadow 0.18s ease;
-  }
-
-  .landing-lang:hover,
-  .landing-lang:focus-visible {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px -18px rgba(232, 163, 61, 0.45);
-    text-decoration: none;
-  }
-
-  .lang-name {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--accent-strong);
-  }
-
-  .lang-tagline {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    line-height: 1.65;
-    flex: 1;
-  }
-
-  .lang-cta {
-    align-self: flex-end;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent-strong);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.25rem 1.1rem;
-    transition: background 0.18s ease;
-  }
-
-  .landing-lang:hover .lang-cta,
-  .landing-lang:focus-visible .lang-cta {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-  }
-
-  .landing-foot {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
-    color: var(--text-muted);
-    font-size: 0.88rem;
-  }
-
-  @media (max-width: 40rem) {
-    .landing-inner {
-      gap: 1.75rem;
-    }
   }
 </style>

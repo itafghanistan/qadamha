@@ -22,13 +22,30 @@ const t = useTranslations(locale);
           {LOCALE_META[l].nativeName}
         </span>
       ) : (
-        <a href={availableLocales.includes(l) ? localizePath(l, path) : localizePath(l)} lang={LOCALE_META[l].htmlLang}>
+        <a
+          href={availableLocales.includes(l) ? localizePath(l, path) : localizePath(l)}
+          lang={LOCALE_META[l].htmlLang}
+          data-lang={l}
+        >
           {LOCALE_META[l].nativeName}
         </a>
       ),
     )
   }
 </nav>
+
+<script>
+  // Remember the visitor's explicit choice so the root page redirects there next time.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('.lang-switcher a[data-lang]')) {
+    link.addEventListener('click', () => {
+      try {
+        localStorage.setItem('qadamha-lang', link.dataset.lang ?? '');
+      } catch {
+        /* storage unavailable */
+      }
+    });
+  }
+</script>
 
 <style>
   .lang-switcher {

@@ -17,6 +17,7 @@ import { getPostsForIdea } from '../../../lib/posts';
 import { requirePerson } from '../../../lib/people';
 import { getRelated, hueFromSlug, parseContentId } from '../../../lib/content-utils';
 import { GITHUB_IDEA_PATH, SITE_URL, withBase } from '../../../config';
+import { jsonScript } from '../../../lib/security';
 
 export async function getStaticPaths() {
   const entries = await getCollection('ideas', (entry) => !entry.data.draft);
@@ -97,7 +98,7 @@ const jsonLd = {
   ogImage={`/og/ideas/${locale}/${slug}.png`}
   ogType="article"
 >
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script slot="head" type="application/ld+json" set:html={jsonScript(jsonLd)} />
 
   <article class="section">
     <div class="container idea-layout">

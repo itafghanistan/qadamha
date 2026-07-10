@@ -33,12 +33,32 @@ export const REASONS = [
 
 export const POST_TYPES = ['story', 'update', 'opinion', 'video'] as const;
 
+/**
+ * Content arrives via community pull requests, so URL fields must be
+ * http(s) only — httpUrl alone would accept javascript: URLs,
+ * which become clickable script execution when rendered as links.
+ */
+const httpUrl = z
+  .string()
+  .url()
+  .refine((u) => u.startsWith('https://') || u.startsWith('http://'), {
+    message: 'must be an http:// or https:// URL',
+  });
+
+/** Images must live in this repository under public/ — no external URLs. */
+const sitePath = z
+  .string()
+  .regex(/^\/[a-zA-Z0-9_\-./]+$/, {
+    message: 'must be a site-relative path under public/, e.g. /logos/my-startup.svg',
+  })
+  .refine((p) => !p.includes('..'), { message: 'must not contain ".."' });
+
 /** A person credited on an idea. `person` links to an entry in the people collection. */
 const credit = z.object({
   name: z.string().min(1),
   role: z.string().optional(),
   person: z.string().optional(),
-  link: z.string().url().optional(),
+  link: httpUrl.optional(),
 });
 
 const ideas = defineCollection({
@@ -48,7 +68,7 @@ const ideas = defineCollection({
     name: z.string().min(1),
     tagline: z.string().min(1),
     /** Path under public/, e.g. "/logos/aseel-express.svg". Cards show a monogram if missing. */
-    logo: z.string().optional(),
+    logo: sitePath.optional(),
     founders: z.array(credit).min(1),
     team: z.array(credit).optional(),
     /** One or more categories — an idea can belong to several at once. */
@@ -61,11 +81,11 @@ const ideas = defineCollection({
     status: z.enum(STATUSES),
     reasons: z.array(z.enum(REASONS)).min(1),
     /** Snapshot of the product on the Wayback Machine (or similar) — shown prominently in the sidebar. */
-    archive: z.string().url().optional(),
+    archive: httpUrl.optional(),
     /** Screenshot of the product (path under public/, e.g. "/screenshots/my-app.png") shown inside the archive preview card. */
-    archiveImage: z.string().optional(),
-    links: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
-    sources: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
+    archiveImage: sitePath.optional(),
+    links: z.array(z.object({ label: z.string(), url: httpUrl })).optional(),
+    sources: z.array(z.object({ label: z.string(), url: httpUrl })).optional(),
     featured: z.boolean().default(false),
     draft: z.boolean().default(false),
     /** Set on the seed ideas so the site can label them as examples. */
@@ -89,7 +109,7 @@ const posts = defineCollection({
       name: z.string().optional(),
     }),
     /** YouTube URL for video posts — embedded on the post page. */
-    videoUrl: z.string().url().optional(),
+    videoUrl: httpUrl.optional(),
     draft: z.boolean().default(false),
     example: z.boolean().default(false),
   }),
@@ -104,9 +124,9 @@ const people = defineCollection({
     name_fa: z.string().optional(),
     name_ps: z.string().optional(),
     /** Path under public/, e.g. "/avatars/zahra-hosseini.svg". */
-    avatar: z.string().optional(),
+    avatar: sitePath.optional(),
     city: z.string().optional(),
-    links: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
+    links: z.array(z.object({ label: z.string(), url: httpUrl })).optional(),
     example: z.boolean().default(false),
   }),
 });

@@ -14,6 +14,7 @@ import { getPostTranslations, youTubeId } from '../../../lib/posts';
 import { personName, requirePerson } from '../../../lib/people';
 import { parseContentId } from '../../../lib/content-utils';
 import { GITHUB_CONTENT_PATH, SITE_URL } from '../../../config';
+import { jsonScript } from '../../../lib/security';
 
 export async function getStaticPaths() {
   const entries = await getCollection('posts', (entry) => !entry.data.draft);
@@ -67,7 +68,7 @@ const jsonLd = {
   ogImage={`/og/posts/${locale}/${slug}.png`}
   ogType="article"
 >
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script slot="head" type="application/ld+json" set:html={jsonScript(jsonLd)} />
 
   <article class="section">
     <div class="container post-container">
