@@ -1,0 +1,25 @@
+{
+  "name": "qadamha",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Qadamha (قدم‌ها) — an open archive of Afghan startups and projects that stopped, paused, or never finished. Every attempt was a step.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/vazirmatn": "^5.2.8",
+    "astro": "^7.0.7",
+    "astro-og-canvas": "^0.13.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
