@@ -1,6 +1,6 @@
 ---
 import type { Locale } from '../i18n';
-import { formatNumber, localizePath, useTranslations } from '../i18n';
+import { formatYear, localizePath, useTranslations } from '../i18n';
 import type { Story } from '../lib/stories';
 import { parseStoryId } from '../lib/story-utils';
 
@@ -14,9 +14,9 @@ const t = useTranslations(locale);
 const { slug } = parseStoryId(story.id);
 const { name, tagline, sector, city, yearsActive, status } = story.data;
 const years =
-  formatNumber(locale, yearsActive.start) +
+  formatYear(locale, yearsActive.start) +
   '–' +
-  (yearsActive.end ? formatNumber(locale, yearsActive.end) : t('story.present'));
+  (yearsActive.end ? formatYear(locale, yearsActive.end) : t('story.present'));
 ---
 
 <a

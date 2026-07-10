@@ -59,6 +59,11 @@ export function formatNumber(locale: Locale, n: number): string {
   return new Intl.NumberFormat(LOCALE_META[locale].intlLocale).format(n);
 }
 
+/** Formats a year with locale digits but no grouping separators (2020, not 2,020). */
+export function formatYear(locale: Locale, year: number): string {
+  return new Intl.NumberFormat(LOCALE_META[locale].intlLocale, { useGrouping: false }).format(year);
+}
+
 /** Key sets of all dictionaries — exported for the structural sync test. */
 export const DICTIONARY_KEYS: Record<Locale, string[]> = {
   en: Object.keys(en),

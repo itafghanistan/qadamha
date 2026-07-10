@@ -55,7 +55,8 @@ npm run build    # production build (validates all story files)
 ```
 
 Built with [Astro](https://astro.build). Deployed to Cloudflare Pages on every
-merge to `main`.
+merge to `main` — in the Cloudflare dashboard, connect the GitHub repository
+with build command `npm run build` and output directory `dist`.
 
 Site-wide constants (production URL, GitHub repo links) live in
 [`src/config.ts`](src/config.ts) and [`astro.config.mjs`](astro.config.mjs).

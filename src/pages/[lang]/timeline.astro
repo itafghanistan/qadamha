@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import StoryCard from '../../components/StoryCard.astro';
-import { LOCALES, formatNumber, useTranslations, type Locale } from '../../i18n';
+import { LOCALES, formatYear, useTranslations, type Locale } from '../../i18n';
 import { getStories } from '../../lib/stories';
 import { groupByYear } from '../../lib/story-utils';
 
@@ -35,7 +35,7 @@ const CONTEXT_YEARS = [2021, 2020, 2014];
             <li class="timeline-year reveal">
               <div class="year-marker">
                 <span class="year-dot" aria-hidden="true" />
-                <h2>{formatNumber(locale, group.year)}</h2>
+                <h2>{formatYear(locale, group.year)}</h2>
               </div>
               {CONTEXT_YEARS.includes(group.year) && (
                 <p class="year-context">{t(`timeline.context.${group.year}`)}</p>

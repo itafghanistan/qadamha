@@ -4,7 +4,7 @@ import Base from '../../../layouts/Base.astro';
 import StoryCard from '../../../components/StoryCard.astro';
 import {
   LOCALE_META,
-  formatNumber,
+  formatYear,
   localizePath,
   useTranslations,
   type Locale,
@@ -36,9 +36,9 @@ const missingLocales = (['en', 'fa', 'ps'] as Locale[]).filter(
 const related = getRelated(entry, await getStories(locale));
 
 const years =
-  formatNumber(locale, data.yearsActive.start) +
+  formatYear(locale, data.yearsActive.start) +
   '–' +
-  (data.yearsActive.end ? formatNumber(locale, data.yearsActive.end) : t('story.present'));
+  (data.yearsActive.end ? formatYear(locale, data.yearsActive.end) : t('story.present'));
 
 const path = `/stories/${slug}/`;
 const pageUrl = new URL(localizePath(locale, path), SITE_URL).href;

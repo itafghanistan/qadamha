@@ -3,6 +3,7 @@ import {
   DICTIONARY_KEYS,
   LOCALES,
   formatNumber,
+  formatYear,
   isLocale,
   localizePath,
   useTranslations,
@@ -60,5 +61,12 @@ describe('formatNumber', () => {
   it('uses locale digits', () => {
     expect(formatNumber('en', 42)).toBe('42');
     expect(formatNumber('fa', 42)).toBe('۴۲');
+  });
+});
+
+describe('formatYear', () => {
+  it('renders years without grouping separators', () => {
+    expect(formatYear('en', 2020)).toBe('2020');
+    expect(formatYear('fa', 2020)).toBe('۲۰۲۰');
   });
 });
