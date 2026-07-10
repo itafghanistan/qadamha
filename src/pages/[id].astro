@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content';
+import { LOCALES, LOCALE_META, localizePath } from '../i18n';
+import { personName, type Person } from '../lib/people';
+import { SITE_URL, withBase } from '../config';
+
+/**
+ * Canonical short profile URL: /<username>/ — the one address a person
+ * shares (e.g. qadamha/rashid). It forwards to the English profile;
+ * the localized pages live at /<lang>/<username>/.
+ */
+export async function getStaticPaths() {
+  const people = await getCollection('people');
+  return people.map((person) => ({ params: { id: person.id }, props: { person } }));
+}
+
+const { person } = Astro.props as { person: Person };
+const target = localizePath('en', `/${person.id}/`);
+const canonical = new URL(target, SITE_URL).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <title>{person.data.name} — Qadamha</title>
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={canonical} />
+    {
+      LOCALES.map((l) => (
+        <link
+          rel="alternate"
+          hreflang={LOCALE_META[l].htmlLang}
+          href={new URL(localizePath(l, `/${person.id}/`), SITE_URL).href}
+        />
+      ))
+    }
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <p>
+      {
+        LOCALES.map((l) => (
+          <a href={localizePath(l, `/${person.id}/`)} lang={LOCALE_META[l].htmlLang}>
+            {personName(person, l)} ({LOCALE_META[l].nativeName})
+          </a>
+        ))
+      }
+    </p>
+  </body>
+</html>

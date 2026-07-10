@@ -1,15 +1,14 @@
 ---
 import { getCollection, render } from 'astro:content';
-import Base from '../../../layouts/Base.astro';
-import IdeaCard from '../../../components/IdeaCard.astro';
-import PostCard from '../../../components/PostCard.astro';
-import Avatar from '../../../components/Avatar.astro';
-import SocialIcon from '../../../components/SocialIcon.astro';
-import { LOCALES, useTranslations, type Locale } from '../../../i18n';
-import { getIdeas } from '../../../lib/ideas';
-import { getPostsByPerson } from '../../../lib/posts';
-import { ideasForPerson, isValidPersonId, personName, type Person } from '../../../lib/people';
-import { parseContentId } from '../../../lib/content-utils';
+import Base from '../../layouts/Base.astro';
+import IdeaCard from '../../components/IdeaCard.astro';
+import PostCard from '../../components/PostCard.astro';
+import Avatar from '../../components/Avatar.astro';
+import SocialIcon from '../../components/SocialIcon.astro';
+import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { getPostsByPerson } from '../../lib/posts';
+import { ideasForPerson, isValidPersonId, personName, type Person } from '../../lib/people';
+import { RESERVED_USERNAMES, parseContentId, preferLocale } from '../../lib/content-utils';
 
 export async function getStaticPaths() {
   const people = await getCollection('people');
@@ -19,6 +18,12 @@ export async function getStaticPaths() {
         `Invalid person username "${person.id}" (src/content/people/${person.id}.md): ` +
           `usernames are lowercase Latin letters, digits and dashes, and the SAME username ` +
           `is used in every language. Localized names go in name_fa/name_ps.`,
+      );
+    }
+    if (RESERVED_USERNAMES.has(person.id)) {
+      throw new Error(
+        `Reserved username "${person.id}" (src/content/people/${person.id}.md): profiles are ` +
+          `served at /<username>/, so this name would shadow a site page. Pick another username.`,
       );
     }
   }
@@ -33,18 +38,17 @@ const t = useTranslations(locale);
 const { Content } = await render(person);
 
 const name = personName(person, locale);
-const ideas = ideasForPerson(person.id, await getIdeas(locale));
-// Show the person's posts in the current language; fall back to any language.
-const allPosts = await getPostsByPerson(person.id);
-const localePosts = allPosts.filter((p) => parseContentId(p.id).locale === locale);
-const posts = localePosts.length > 0 ? localePosts : allPosts;
+// This page's language first, then work that exists only in other languages.
+const allIdeas = await getCollection('ideas', (e) => !e.data.draft);
+const ideas = preferLocale(locale, ideasForPerson(person.id, allIdeas));
+const posts = preferLocale(locale, await getPostsByPerson(person.id));
 ---
 
 <Base
   locale={locale}
   title={`${name} — ${t('site.name')}`}
   description={`${name} — ${t('person.ideas')}`}
-  path={`/people/${person.id}/`}
+  path={`/${person.id}/`}
 >
   <section class="section">
     <div class="container profile">
@@ -75,7 +79,7 @@ const posts = localePosts.length > 0 ? localePosts : allPosts;
             <h2>{t('person.ideas')}</h2>
             <div class="card-grid">
               {ideas.map((idea) => (
-                <IdeaCard idea={idea} locale={locale} />
+                <IdeaCard idea={idea} locale={parseContentId(idea.id).locale} />
               ))}
             </div>
           </>

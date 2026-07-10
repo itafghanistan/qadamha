@@ -20,7 +20,7 @@ interface Props {
 
 const { locale, person, name, link, role, size } = Astro.props;
 const displayName = person ? personName(person, locale) : (name ?? '');
-const href = person ? localizePath(locale, `/people/${person.id}/`) : link;
+const href = person ? localizePath(locale, `/${person.id}/`) : link;
 const avatarSize = size ?? (role ? 30 : 22);
 ---
 

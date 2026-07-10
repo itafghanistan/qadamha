@@ -49,6 +49,10 @@ English, Dari, and Pashto files alike, and put the localized display names in
 the profile's `name_fa` / `name_ps` fields. CI fails the build if a
 `person:` reference doesn't match an existing profile.
 
+Each profile gets one short canonical address, `qadamha/<username>`, plus a
+page per language — `…/en/<username>`, `…/fa/<username>`, `…/ps/<username>` —
+where the person's ideas and posts in that language are listed first.
+
 ### Not comfortable with GitHub?
 
 [Open a story form](../../issues/new/choose) and write everything you know in

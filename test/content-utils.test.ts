@@ -3,7 +3,9 @@ import {
   buildFilterIndex,
   getRelated,
   groupByYear,
+  RESERVED_USERNAMES,
   isValidPersonId,
+  preferLocale,
   normalizeSearchText,
   parseContentId,
   type IdeaRef,
@@ -128,5 +130,35 @@ describe('isValidPersonId', () => {
     expect(isValidPersonId('-zahra')).toBe(false);
     expect(isValidPersonId('zahra-')).toBe(false);
     expect(isValidPersonId('')).toBe(false);
+  });
+});
+
+describe('preferLocale', () => {
+  const entries = [
+    { id: 'en/one' },
+    { id: 'fa/one' }, // translation pair with en/one
+    { id: 'en/two' },
+    { id: 'ps/three' },
+  ];
+
+  it('lists the current language first, dedupes translation pairs', () => {
+    expect(preferLocale('fa', entries).map((e) => e.id)).toEqual([
+      'fa/one', // fa version preferred over en/one
+      'en/two',
+      'ps/three',
+    ]);
+  });
+
+  it('falls back to other languages when nothing exists in the current one', () => {
+    expect(preferLocale('ps', [{ id: 'en/one' }]).map((e) => e.id)).toEqual(['en/one']);
+  });
+});
+
+describe('RESERVED_USERNAMES', () => {
+  it('blocks route and locale names', () => {
+    for (const reserved of ['en', 'fa', 'ps', 'ideas', 'posts', 'timeline', 'og', 'categories']) {
+      expect(RESERVED_USERNAMES.has(reserved), reserved).toBe(true);
+    }
+    expect(RESERVED_USERNAMES.has('zahra-hosseini')).toBe(false);
   });
 });

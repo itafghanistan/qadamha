@@ -3,6 +3,8 @@
 # Usernames are lowercase Latin letters, digits and dashes — and the SAME
 # username is used in EVERY language (en, fa, ps). Never translate it;
 # localized display names go in name_fa / name_ps below.
+# The profile is served at /<username>/ (canonical short link) and at
+# /en/<username>/, /fa/<username>/, /ps/<username>/ for each language.
 # Ideas and posts link to it with `person: zahra-hosseini`.
 name: Full Name # in Latin script
 name_fa: نام کامل # optional — shown on Dari pages

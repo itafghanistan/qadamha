@@ -140,8 +140,43 @@ export function groupByYear<T extends IdeaRef>(ideas: T[]): { year: number; idea
  * A person's username: ONE lowercase Latin slug (e.g. "zahra-hosseini") used
  * identically in English, Dari, and Pashto content. Localized display names
  * belong in the profile's name_fa/name_ps fields, never in the username.
+ * Profiles live at /<username>/ and /<lang>/<username>/.
  */
 export const PERSON_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Segments that are site routes or asset folders — a username may not shadow
+ * them, since profiles are served at /<username>/ and /<lang>/<username>/.
+ */
+export const RESERVED_USERNAMES = new Set([
+  'en', 'fa', 'ps',
+  'ideas', 'posts', 'people', 'categories', 'timeline', 'about', 'contribute',
+  'submit', 'invite', 'roadmap', 'search', 'og', 'avatars', 'logos', 'fonts',
+  'assets', 'index', 'admin', 'api', 'qadamha',
+]);
+
+/**
+ * Orders localized entries for a listing: entries in `locale` first, then the
+ * person's work that exists only in other languages — deduplicated by slug,
+ * preferring the current language's version of each translation pair.
+ */
+export function preferLocale<T extends { id: string }>(locale: Locale, entries: T[]): T[] {
+  const bySlug = new Map<string, T>();
+  for (const entry of entries) {
+    const { locale: entryLocale, slug } = parseContentId(entry.id);
+    const existing = bySlug.get(slug);
+    if (!existing) {
+      bySlug.set(slug, entry);
+    } else if (entryLocale === locale && parseContentId(existing.id).locale !== locale) {
+      bySlug.set(slug, entry);
+    }
+  }
+  const deduped = [...bySlug.values()];
+  return [
+    ...deduped.filter((e) => parseContentId(e.id).locale === locale),
+    ...deduped.filter((e) => parseContentId(e.id).locale !== locale),
+  ];
+}
 
 export function isValidPersonId(id: string): boolean {
   return PERSON_ID_PATTERN.test(id);
