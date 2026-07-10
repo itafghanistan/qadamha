@@ -1,0 +1,55 @@
+---
+import type { Locale } from '../i18n';
+import { localizePath } from '../i18n';
+import type { Person } from '../lib/people';
+import { personName } from '../lib/people';
+import Avatar from './Avatar.astro';
+
+interface Props {
+  locale: Locale;
+  /** Profile entry, when the person has one. */
+  person?: Person | undefined;
+  /** Display name fallback when there is no profile. */
+  name?: string | undefined;
+  /** External link fallback (e.g. a founder's website) when there is no profile. */
+  link?: string | undefined;
+  size?: number;
+}
+
+const { locale, person, name, link, size = 22 } = Astro.props;
+const displayName = person ? personName(person, locale) : (name ?? '');
+const href = person ? localizePath(locale, `/people/${person.id}/`) : link;
+---
+
+{
+  href ? (
+    <a class="person" href={href} rel={person ? undefined : 'noopener'}>
+      <Avatar
+        src={person?.data.avatar}
+        name={person?.data.name ?? displayName}
+        hueKey={person?.id ?? displayName}
+        size={size}
+      />
+      <span>{displayName}</span>
+    </a>
+  ) : (
+    <span class="person">
+      <Avatar src={undefined} name={displayName} size={size} />
+      <span>{displayName}</span>
+    </span>
+  )
+}
+
+<style>
+  .person {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+  }
+
+  a.person:hover span,
+  a.person:focus-visible span {
+    color: var(--accent-strong);
+  }
+</style>

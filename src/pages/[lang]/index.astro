@@ -1,8 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
-import StoryCard from '../../components/StoryCard.astro';
+import IdeaCard from '../../components/IdeaCard.astro';
+import PostCard from '../../components/PostCard.astro';
 import { LOCALES, formatNumber, localizePath, useTranslations, type Locale } from '../../i18n';
-import { getStories } from '../../lib/stories';
+import { getIdeas } from '../../lib/ideas';
+import { getPosts } from '../../lib/posts';
+import { parseContentId } from '../../lib/content-utils';
 import { SITE_URL, GITHUB_REPO } from '../../config';
 
 export function getStaticPaths() {
@@ -11,9 +14,11 @@ export function getStaticPaths() {
 
 const locale = Astro.params.lang as Locale;
 const t = useTranslations(locale);
-const stories = await getStories(locale);
-const featured = stories.filter((s) => s.data.featured).slice(0, 3);
-const fallback = featured.length > 0 ? featured : stories.slice(0, 3);
+const ideas = await getIdeas(locale);
+const featured = ideas.filter((s) => s.data.featured).slice(0, 3);
+const fallback = featured.length > 0 ? featured : ideas.slice(0, 3);
+const latestPosts = (await getPosts(locale)).slice(0, 3);
+const ideaNames = new Map(ideas.map((i) => [parseContentId(i.id).slug, i.data.name]));
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -40,13 +45,13 @@ const jsonLd = {
       <h1>{t('home.hero.title')}</h1>
       <p class="hero-subtitle">{t('home.hero.subtitle')}</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href={localizePath(locale, '/stories/')}>{t('home.hero.cta')}</a>
-        <a class="btn btn-ghost" href={localizePath(locale, '/contribute/')}
+        <a class="btn btn-primary" href={localizePath(locale, '/ideas/')}>{t('home.hero.cta')}</a>
+        <a class="btn btn-ghost" href={localizePath(locale, '/submit/')}
           >{t('home.contribute.cta')}</a
         >
       </div>
       <p class="step-count">
-        {t('home.count', { count: formatNumber(locale, stories.length) })}
+        {t('home.count', { count: formatNumber(locale, ideas.length) })}
       </p>
     </div>
   </section>
@@ -55,10 +60,10 @@ const jsonLd = {
     <div class="container">
       <h2>{t('home.featured')}</h2>
       <div class="card-grid">
-        {fallback.map((story) => <StoryCard story={story} locale={locale} />)}
+        {fallback.map((idea) => <IdeaCard idea={idea} locale={locale} />)}
       </div>
       <p class="browse-all">
-        <a href={localizePath(locale, '/stories/')}>{t('home.browseAll')}</a>
+        <a href={localizePath(locale, '/ideas/')}>{t('home.browseAll')}</a>
       </p>
     </div>
   </section>
@@ -71,11 +76,33 @@ const jsonLd = {
     </div>
   </section>
 
+  {
+    latestPosts.length > 0 && (
+      <section class="section">
+        <div class="container">
+          <h2>{t('posts.latest')}</h2>
+          <div class="card-grid">
+            {latestPosts.map((post) => (
+              <PostCard
+                post={post}
+                locale={locale}
+                ideaName={post.data.idea ? ideaNames.get(post.data.idea) : undefined}
+              />
+            ))}
+          </div>
+          <p class="browse-all">
+            <a href={localizePath(locale, '/posts/')}>{t('posts.all')}</a>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
   <section class="section">
     <div class="container contribute-band">
       <h2>{t('home.contribute.title')}</h2>
       <p>{t('home.contribute.body')}</p>
-      <a class="btn btn-primary" href={localizePath(locale, '/contribute/')}
+      <a class="btn btn-primary" href={localizePath(locale, '/submit/')}
         >{t('home.contribute.cta')}</a
       >
     </div>

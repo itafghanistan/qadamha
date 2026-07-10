@@ -8,7 +8,7 @@ next generation: we kept trying.
 ## Add a story
 
 1. **Fork** this repository.
-2. **Copy** `src/content/stories/_template.md` into the language folder you're
+2. **Copy** `src/content/ideas/_template.md` into the language folder you're
    writing in — `en/` (English), `fa/` (Dari), or `ps/` (Pashto) — and name
    the file after the project in lowercase-with-dashes, e.g. `my-startup.md`.
 3. **Fill in the frontmatter** (the block between `---` lines). The template
@@ -72,7 +72,7 @@ By contributing you agree that story content is licensed under
 
 ۱. مخزن را **فورک** کنید.
 
-۲. فایل `src/content/stories/_template.md` را در پوشهٔ زبان مورد نظر —
+۲. فایل `src/content/ideas/_template.md` را در پوشهٔ زبان مورد نظر —
 `en/` (انگلیسی)، `fa/` (دری) یا `ps/` (پشتو) — **کاپی** کنید و به نام پروژه
 با حروف کوچک و خط تیره نام‌گذاری کنید، مثلاً `my-startup.md`.
 
@@ -90,14 +90,14 @@ By contributing you agree that story content is licensed under
   درباره‌شان بنویسید که دوست دارید درباره‌تان بنویسند.
 - **صداقت.** ارقام را بزرگ نکنید و جزئیات نسازید.
 - **منابع.** در صورت امکان به مقاله‌های خبری، نسخه‌های آرشیوشده
-  (web.archive.org) یا صفحه‌های اپ‌استور پیوند بدهید.
+  (web.archive.org) یا صفحه‌های اپ‌استور لینک بدهید.
 - **روایت دست اول.** اگر داستان خودتان است، در متن بگویید.
 - **حریم خصوصی.** فقط نام کسانی را بیاورید که به‌صورت عمومی با پروژه شناخته
   می‌شوند یا رضایت داده‌اند.
 
 ### ترجمهٔ یک داستان
 
-داستان‌ها با **نام فایل** به هم پیوند می‌خورند. برای ترجمهٔ
+داستان‌ها با **نام فایل** به هم وصل می‌شوند. برای ترجمهٔ
 `en/my-startup.md` به دری، آن را به `fa/my-startup.md` (با همان نام!) کاپی
 کنید، متن را ترجمه کنید و pull request بفرستید. فیلدهای `sector`، `status` و
 `reasons` را به انگلیسی نگه دارید؛ سایت خودش ترجمه‌شان می‌کند.
@@ -119,7 +119,7 @@ By contributing you agree that story content is licensed under
 
 ۱. خزانه (repository) **فورک** کړئ.
 
-۲. د `src/content/stories/_template.md` فایل د ژبې فولډر ته — `en/`
+۲. د `src/content/ideas/_template.md` فایل د ژبې فولډر ته — `en/`
 (انګلیسي)، `fa/` (دري) یا `ps/` (پښتو) — **کاپي** کړئ او د پروژې په نوم یې
 په کوچنیو تورو او ډش سره ونوموئ، لکه `my-startup.md`.
 
@@ -136,7 +136,7 @@ By contributing you agree that story content is licensed under
 - **لومړی درناوی.** ریښتینو خلکو دا کیسې ژوند کړې دي.
 - **رښتینولي.** شمېرې مه لویوئ او جزئیات مه جوړوئ.
 - **سرچینې.** د امکان تر حده خبري مقالو، ارشیف شویو پاڼو
-  (web.archive.org) یا اپ سټور پاڼو ته اړیکه ورکړئ.
+  (web.archive.org) یا اپ سټور پاڼو ته لینک ورکړئ.
 - **لومړی لاس روایت.** که ستاسو خپله کیسه ده، په متن کې یې ووایاست.
 - **محرمیت.** یوازې د هغو کسانو نومونه واخلئ چې په عامه توګه له پروژې سره
   تړلي دي یا رضایت یې ورکړی.

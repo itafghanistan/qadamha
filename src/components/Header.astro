@@ -13,7 +13,8 @@ const { locale, path, availableLocales } = Astro.props;
 const t = useTranslations(locale);
 
 const links = [
-  { href: localizePath(locale, '/stories/'), label: t('nav.stories') },
+  { href: localizePath(locale, '/ideas/'), label: t('nav.ideas') },
+  { href: localizePath(locale, '/posts/'), label: t('nav.posts') },
   { href: localizePath(locale, '/timeline/'), label: t('nav.timeline') },
   { href: localizePath(locale, '/about/'), label: t('nav.about') },
   { href: localizePath(locale, '/contribute/'), label: t('nav.contribute') },
@@ -29,6 +30,13 @@ const links = [
     <nav class="site-nav" aria-label="Main">
       {links.map((link) => <a href={link.href}>{link.label}</a>)}
     </nav>
+    <form class="header-search" action={localizePath(locale, '/ideas/')} method="get" role="search">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.8-3.8"></path>
+      </svg>
+      <input type="search" name="q" placeholder={t('search.placeholder')} aria-label={t('search.label')} />
+    </form>
     <LanguageSwitcher locale={locale} path={path} availableLocales={availableLocales} />
   </div>
 </header>
@@ -95,6 +103,36 @@ const links = [
     text-decoration: none;
   }
 
+  .header-search {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    color: var(--text-muted);
+    transition: border-color 0.15s ease;
+  }
+
+  .header-search:focus-within {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
+  .header-search input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    inline-size: 9.5rem;
+  }
+
+  .header-search input::placeholder {
+    color: var(--text-muted);
+  }
+
   @media (max-width: 40rem) {
     .brand-name {
       display: none;
@@ -104,6 +142,16 @@ const links = [
       order: 3;
       inline-size: 100%;
       margin-inline-start: 0;
+    }
+
+    .header-search {
+      order: 4;
+      inline-size: 100%;
+    }
+
+    .header-search input {
+      inline-size: auto;
+      flex: 1;
     }
   }
 </style>

@@ -11,7 +11,7 @@ interface Props {
   locale: Locale;
   title: string;
   description: string;
-  /** Path of the current page WITHOUT the locale prefix, e.g. "/stories/". */
+  /** Path of the current page WITHOUT the locale prefix, e.g. "/ideas/". */
   path: string;
   availableLocales?: Locale[];
   ogImage?: string;
@@ -45,6 +45,6 @@ const meta = LOCALE_META[locale];
     <main id="main">
       <slot />
     </main>
-    <Footer locale={locale} />
+    <Footer locale={locale} path={path} />
   </body>
 </html>

@@ -1,0 +1,235 @@
+---
+import Base from '../../../layouts/Base.astro';
+import IdeaCard from '../../../components/IdeaCard.astro';
+import { LOCALES, formatYear, useTranslations, type Locale } from '../../../i18n';
+import { getIdeas } from '../../../lib/ideas';
+import { buildFilterIndex } from '../../../lib/content-utils';
+import { SECTORS, STATUSES, REASONS } from '../../../content.config';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const ideas = await getIdeas(locale);
+// Localized labels go into the search haystack so users can search in their language.
+const index = buildFilterIndex(ideas, (idea) =>
+  [t(`sector.${idea.data.sector}`), t(`status.${idea.data.status}`)].join(' '),
+);
+
+const cities = [...new Set(index.map((s) => s.city))].sort();
+const years = [...new Set(index.map((s) => s.yearStart))].sort((a, b) => b - a);
+const usedSectors = SECTORS.filter((s) => index.some((e) => e.sector === s));
+const usedReasons = REASONS.filter((r) => index.some((e) => e.reasons.includes(r)));
+---
+
+<Base
+  locale={locale}
+  title={`${t('ideas.title')} — ${t('site.name')}`}
+  description={t('ideas.subtitle')}
+  path="/ideas/"
+>
+  <section class="section">
+    <div class="container">
+      <h1>{t('ideas.title')}</h1>
+      <p class="page-subtitle">{t('ideas.subtitle')}</p>
+
+      <form class="filters" id="filters">
+        <label class="search-field">
+          <span>{t('filters.search')}</span>
+          <input type="search" name="q" placeholder={t('search.placeholder')} />
+        </label>
+        <label>
+          <span>{t('filters.sector')}</span>
+          <select name="sector">
+            <option value="">{t('filters.all')}</option>
+            {usedSectors.map((s) => <option value={s}>{t(`sector.${s}`)}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>{t('filters.city')}</span>
+          <select name="city">
+            <option value="">{t('filters.all')}</option>
+            {cities.map((c) => <option value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>{t('filters.year')}</span>
+          <select name="year">
+            <option value="">{t('filters.all')}</option>
+            {years.map((y) => <option value={String(y)}>{formatYear(locale, y)}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>{t('filters.status')}</span>
+          <select name="status">
+            <option value="">{t('filters.all')}</option>
+            {STATUSES.map((s) => <option value={s}>{t(`status.${s}`)}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>{t('filters.reason')}</span>
+          <select name="reason">
+            <option value="">{t('filters.all')}</option>
+            {usedReasons.map((r) => <option value={r}>{t(`reason.${r}`)}</option>)}
+          </select>
+        </label>
+        <button type="reset" class="btn btn-ghost">{t('ideas.clearFilters')}</button>
+      </form>
+
+      <p
+        class="result-count"
+        id="result-count"
+        data-template={t('ideas.results', { count: '{count}' })}
+      >
+        {t('ideas.results', { count: ideas.length })}
+      </p>
+
+      <div class="card-grid" id="idea-grid">
+        {ideas.map((idea) => <IdeaCard idea={idea} locale={locale} />)}
+      </div>
+
+      <p class="no-results" id="no-results" hidden>{t('ideas.noResults')}</p>
+
+      <script type="application/json" id="filter-index" set:html={JSON.stringify(index)} />
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { normalizeSearchText, type FilterEntry } from '../../../lib/content-utils';
+
+  const form = document.getElementById('filters') as HTMLFormElement;
+  const grid = document.getElementById('idea-grid')!;
+  const countEl = document.getElementById('result-count')!;
+  const noResults = document.getElementById('no-results')!;
+  const template = countEl.dataset.template ?? '{count}';
+
+  const index: FilterEntry[] = JSON.parse(
+    document.getElementById('filter-index')!.textContent ?? '[]',
+  );
+  const bySlug = new Map(index.map((e) => [e.slug, e]));
+  const cards = [...grid.querySelectorAll<HTMLElement>('[data-slug]')];
+
+  function apply() {
+    const data = new FormData(form);
+    const q = normalizeSearchText((data.get('q') as string) ?? '');
+    const sector = data.get('sector') as string;
+    const city = data.get('city') as string;
+    const year = data.get('year') as string;
+    const status = data.get('status') as string;
+    const reason = data.get('reason') as string;
+
+    let visible = 0;
+    for (const card of cards) {
+      const entry = bySlug.get(card.dataset.slug ?? '');
+      if (!entry) continue;
+      const matches =
+        (!q || entry.search.includes(q)) &&
+        (!sector || entry.sector === sector) &&
+        (!city || entry.city === city) &&
+        (!year ||
+          (entry.yearStart <= Number(year) &&
+            (entry.yearEnd === null || entry.yearEnd >= Number(year)))) &&
+        (!status || entry.status === status) &&
+        (!reason || entry.reasons.includes(reason));
+      card.hidden = !matches;
+      if (matches) visible++;
+    }
+    countEl.textContent = template.replace('{count}', String(visible));
+    noResults.hidden = visible > 0;
+
+    // Sync state to URL so filtered views are shareable.
+    const params = new URLSearchParams();
+    for (const [key, value] of data.entries()) {
+      if (value) params.set(key, value as string);
+    }
+    const query = params.toString();
+    history.replaceState(null, '', query ? `?${query}` : location.pathname);
+  }
+
+  form.addEventListener('input', apply);
+  form.addEventListener('reset', () => queueMicrotask(apply));
+
+  // Restore state from URL on load.
+  const params = new URLSearchParams(location.search);
+  for (const [key, value] of params.entries()) {
+    const field = form.elements.namedItem(key);
+    if (field instanceof HTMLSelectElement || field instanceof HTMLInputElement) {
+      field.value = value;
+    }
+  }
+  if ([...params.keys()].length > 0) apply();
+</script>
+
+<style>
+  .page-subtitle {
+    color: var(--text-muted);
+    max-width: 44rem;
+    margin-block-end: 2rem;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    align-items: end;
+    padding: 1.1rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-block-end: 1.25rem;
+  }
+
+  .filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .search-field {
+    flex: 1 1 14rem;
+  }
+
+  .filters select,
+  .filters input[type='search'] {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.4rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    min-inline-size: 8.5rem;
+  }
+
+  .filters input[type='search'] {
+    inline-size: 100%;
+  }
+
+  .filters select:focus-visible,
+  .filters input[type='search']:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  .filters button {
+    padding-block: 0.42rem;
+    font-size: 0.9rem;
+  }
+
+  .result-count {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-block-end: 1.25rem;
+  }
+
+  .no-results {
+    text-align: center;
+    color: var(--text-muted);
+    padding-block: 3rem;
+    font-size: 1.05rem;
+  }
+</style>

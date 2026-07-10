@@ -1,0 +1,465 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import IdeaCard from '../../../components/IdeaCard.astro';
+import PostCard from '../../../components/PostCard.astro';
+import PersonLink from '../../../components/PersonLink.astro';
+import {
+  LOCALE_META,
+  formatYear,
+  localizePath,
+  useTranslations,
+  type Locale,
+} from '../../../i18n';
+import { getIdeas, getIdeaTranslations, type Idea } from '../../../lib/ideas';
+import { getPostsForIdea } from '../../../lib/posts';
+import { getPerson } from '../../../lib/people';
+import { getRelated, hueFromSlug, parseContentId } from '../../../lib/content-utils';
+import { GITHUB_IDEA_PATH, SITE_URL } from '../../../config';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('ideas', (entry) => !entry.data.draft);
+  return entries.map((entry) => {
+    const { locale, slug } = parseContentId(entry.id);
+    return { params: { lang: locale, slug }, props: { entry } };
+  });
+}
+
+const { entry } = Astro.props as { entry: Idea };
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const { slug } = parseContentId(entry.id);
+const { Content } = await render(entry);
+
+const data = entry.data;
+const availableLocales = await getIdeaTranslations(slug);
+const otherLocales = availableLocales.filter((l) => l !== locale);
+const missingLocales = (['en', 'fa', 'ps'] as Locale[]).filter(
+  (l) => !availableLocales.includes(l),
+);
+const related = getRelated(entry, await getIdeas(locale));
+const relatedPosts = await getPostsForIdea(locale, slug);
+const founders = await Promise.all(
+  data.founders.map(async (c) => ({ ...c, profile: await getPerson(c.person) })),
+);
+const team = await Promise.all(
+  (data.team ?? []).map(async (c) => ({ ...c, profile: await getPerson(c.person) })),
+);
+
+const years =
+  formatYear(locale, data.yearsActive.start) +
+  '–' +
+  (data.yearsActive.end ? formatYear(locale, data.yearsActive.end) : t('idea.present'));
+
+const path = `/ideas/${slug}/`;
+const pageUrl = new URL(localizePath(locale, path), SITE_URL).href;
+const shareText = `${data.name} — ${data.tagline}`;
+const shareLinks = [
+  { label: 'X', url: `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}` },
+  { label: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}` },
+  { label: 'LinkedIn', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}` },
+  { label: 'Telegram', url: `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}` },
+  { label: 'WhatsApp', url: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}` },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.name,
+  description: data.tagline,
+  inLanguage: LOCALE_META[locale].htmlLang,
+  url: pageUrl,
+  author: data.founders.map((f) => ({ '@type': 'Person', name: f.name })),
+  publisher: { '@type': 'Organization', name: 'Qadamha', url: SITE_URL },
+};
+---
+
+<Base
+  locale={locale}
+  title={`${data.name} — ${t('site.name')}`}
+  description={data.tagline}
+  path={path}
+  availableLocales={availableLocales}
+  ogImage={`/og/ideas/${locale}/${slug}.png`}
+  ogType="article"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="section">
+    <div class="container idea-layout">
+      <div class="idea-main">
+        <header class="idea-header">
+          {
+            data.logo ? (
+              <img class="idea-logo" src={data.logo} alt="" width="88" height="88" />
+            ) : (
+              <span
+                class="idea-logo idea-monogram"
+                style={`--logo-hue: ${hueFromSlug(slug)}`}
+                aria-hidden="true"
+              >
+                {data.name.trim().charAt(0).toUpperCase()}
+              </span>
+            )
+          }
+          <div>
+            <h1>{data.name}</h1>
+            <p class="idea-tagline">{data.tagline}</p>
+            {
+              otherLocales.length > 0 && (
+                <p class="translations">
+                  {t('idea.alsoAvailable')}
+                  {otherLocales.map((l) => (
+                    <a href={localizePath(l, path)} lang={LOCALE_META[l].htmlLang} class="chip">
+                      {LOCALE_META[l].nativeName}
+                    </a>
+                  ))}
+                </p>
+              )
+            }
+          </div>
+        </header>
+
+        <div class="prose">
+          <Content />
+        </div>
+
+        {
+          missingLocales.length > 0 && (
+            <aside class="translate-invite">
+              {missingLocales.map((l) => (
+                <p>
+                  <a href={localizePath(locale, '/contribute/')}>
+                    {t('idea.helpTranslate', { language: LOCALE_META[l].nativeName })}
+                  </a>
+                </p>
+              ))}
+            </aside>
+          )
+        }
+
+        <div class="share-row">
+          <span class="share-label">{t('idea.share')}</span>
+          {
+            shareLinks.map((link) => (
+              <a class="chip chip-muted" href={link.url} rel="noopener" target="_blank">
+                {link.label}
+              </a>
+            ))
+          }
+          <button class="chip chip-muted copy-btn" data-url={pageUrl} data-copied={t('idea.copied')}>
+            {t('idea.copyLink')}
+          </button>
+        </div>
+
+        <p class="edit-link">
+          <a href={`${GITHUB_IDEA_PATH}/${locale}/${slug}.md`} rel="noopener">
+            {t('idea.editOnGitHub')}
+          </a>
+        </p>
+      </div>
+
+      <aside class="idea-side">
+        <dl>
+          <dt>{t('idea.status')}</dt>
+          <dd><span class="chip">{t(`status.${data.status}`)}</span></dd>
+
+          <dt>{t('idea.reasons')}</dt>
+          <dd class="chips">
+            {data.reasons.map((r) => <span class="chip chip-muted">{t(`reason.${r}`)}</span>)}
+          </dd>
+
+          <dt>{t('idea.years')}</dt>
+          <dd>{years}</dd>
+
+          <dt>{t('idea.city')}</dt>
+          <dd>{data.city}</dd>
+
+          <dt>{t('idea.sector')}</dt>
+          <dd>{t(`sector.${data.sector}`)}</dd>
+
+          {
+            data.archive && (
+              <>
+                <dt>{t('idea.archive')}</dt>
+                <dd>
+                  <a class="archive-link" href={data.archive} rel="noopener">
+                    {new URL(data.archive).hostname.replace(/^www\./, '')} ↗
+                  </a>
+                </dd>
+              </>
+            )
+          }
+
+          <dt>{t('idea.founders')}</dt>
+          <dd>
+            <ul class="people-list">
+              {
+                founders.map((f) => (
+                  <li>
+                    <PersonLink
+                      locale={locale}
+                      person={f.profile}
+                      name={f.name}
+                      link={f.link}
+                    />
+                    {f.role && <span class="role"> — {f.role}</span>}
+                  </li>
+                ))
+              }
+            </ul>
+          </dd>
+
+          {
+            team.length > 0 && (
+              <>
+                <dt>{t('idea.team')}</dt>
+                <dd>
+                  <ul class="people-list">
+                    {team.map((m) => (
+                      <li>
+                        <PersonLink locale={locale} person={m.profile} name={m.name} />
+                        {m.role && <span class="role"> — {m.role}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )
+          }
+
+          {
+            data.links && data.links.length > 0 && (
+              <>
+                <dt>{t('idea.links')}</dt>
+                <dd>
+                  <ul>
+                    {data.links.map((l) => (
+                      <li>
+                        <a href={l.url} rel="noopener">
+                          {l.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )
+          }
+
+          {
+            data.sources && data.sources.length > 0 && (
+              <>
+                <dt>{t('idea.sources')}</dt>
+                <dd>
+                  <ul>
+                    {data.sources.map((s) => (
+                      <li>
+                        <a href={s.url} rel="noopener">
+                          {s.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )
+          }
+        </dl>
+      </aside>
+    </div>
+
+    {
+      relatedPosts.length > 0 && (
+        <div class="container related">
+          <h2>{t('idea.relatedPosts')}</h2>
+          <div class="card-grid">
+            {relatedPosts.map((post) => (
+              <PostCard post={post} locale={locale} />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      related.length > 0 && (
+        <div class="container related">
+          <h2>{t('idea.related')}</h2>
+          <div class="card-grid">
+            {related.map((idea) => (
+              <IdeaCard idea={idea} locale={locale} />
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </article>
+</Base>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.copy-btn');
+  btn?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(btn.dataset.url ?? location.href);
+    const original = btn.textContent;
+    btn.textContent = btn.dataset.copied ?? original;
+    setTimeout(() => (btn.textContent = original), 1600);
+  });
+</script>
+
+<style>
+  .idea-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: 3rem;
+  }
+
+  .idea-header {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    margin-block-end: 1.5rem;
+  }
+
+  .idea-logo {
+    inline-size: 88px;
+    block-size: 88px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--bg-soft);
+  }
+
+  .idea-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--logo-hue) 42% 26%);
+    color: hsl(var(--logo-hue) 75% 78%);
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+
+  .idea-tagline {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+  }
+
+  .translations {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .idea-side dl {
+    position: sticky;
+    inset-block-start: 4.5rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .idea-side dt {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-block-start: 1rem;
+  }
+
+  .idea-side dt:first-child {
+    margin-block-start: 0;
+  }
+
+  .idea-side dd {
+    margin: 0.25rem 0 0;
+  }
+
+  .idea-side ul {
+    margin: 0;
+    padding-inline-start: 1.1rem;
+  }
+
+  .idea-side .people-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .idea-side .role {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .archive-link {
+    font-weight: 700;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .translate-invite {
+    background: var(--accent-soft);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.2rem;
+    margin-block: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .translate-invite p {
+    margin: 0;
+  }
+
+  .share-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin-block: 2rem 0.75rem;
+  }
+
+  .share-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-inline-end: 0.35rem;
+  }
+
+  .copy-btn {
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .edit-link {
+    font-size: 0.88rem;
+  }
+
+  .related {
+    margin-block-start: 3.5rem;
+  }
+
+  @media (max-width: 56rem) {
+    .idea-layout {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .idea-side dl {
+      position: static;
+    }
+
+    .idea-header {
+      flex-direction: column;
+    }
+  }
+</style>

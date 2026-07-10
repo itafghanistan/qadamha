@@ -1,9 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
-import StoryCard from '../../components/StoryCard.astro';
+import IdeaCard from '../../components/IdeaCard.astro';
 import { LOCALES, formatYear, useTranslations, type Locale } from '../../i18n';
-import { getStories } from '../../lib/stories';
-import { groupByYear } from '../../lib/story-utils';
+import { getIdeas } from '../../lib/ideas';
+import { groupByYear } from '../../lib/content-utils';
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -11,8 +11,8 @@ export function getStaticPaths() {
 
 const locale = Astro.params.lang as Locale;
 const t = useTranslations(locale);
-const stories = await getStories(locale);
-const groups = groupByYear(stories);
+const ideas = await getIdeas(locale);
+const groups = groupByYear(ideas);
 
 /** Years that have a historical context line in the dictionaries. */
 const CONTEXT_YEARS = [2021, 2020, 2014];
@@ -41,8 +41,8 @@ const CONTEXT_YEARS = [2021, 2020, 2014];
                 <p class="year-context">{t(`timeline.context.${group.year}`)}</p>
               )}
               <div class="card-grid">
-                {group.stories.map((story) => (
-                  <StoryCard story={story} locale={locale} />
+                {group.ideas.map((idea) => (
+                  <IdeaCard idea={idea} locale={locale} />
                 ))}
               </div>
             </li>

@@ -1,0 +1,52 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PostCard from '../../../components/PostCard.astro';
+import { LOCALES, useTranslations, type Locale } from '../../../i18n';
+import { getPosts } from '../../../lib/posts';
+import { getIdeas } from '../../../lib/ideas';
+import { parseContentId } from '../../../lib/content-utils';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const posts = await getPosts(locale);
+const ideas = await getIdeas(locale);
+const ideaNames = new Map(ideas.map((i) => [parseContentId(i.id).slug, i.data.name]));
+---
+
+<Base
+  locale={locale}
+  title={`${t('posts.title')} — ${t('site.name')}`}
+  description={t('posts.subtitle')}
+  path="/posts/"
+>
+  <section class="section">
+    <div class="container">
+      <h1>{t('posts.title')}</h1>
+      <p class="page-subtitle">{t('posts.subtitle')}</p>
+
+      <div class="card-grid">
+        {
+          posts.map((post) => (
+            <PostCard
+              post={post}
+              locale={locale}
+              ideaName={post.data.idea ? ideaNames.get(post.data.idea) : undefined}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-subtitle {
+    color: var(--text-muted);
+    max-width: 44rem;
+    margin-block-end: 2rem;
+  }
+</style>

@@ -29,9 +29,9 @@ describe('dictionaries', () => {
 
 describe('useTranslations', () => {
   it('returns the translated string', () => {
-    expect(useTranslations('en')('nav.stories')).toBe('Stories');
-    expect(useTranslations('fa')('nav.stories')).toBe('داستان‌ها');
-    expect(useTranslations('ps')('nav.stories')).toBe('کیسې');
+    expect(useTranslations('en')('nav.ideas')).toBe('Ideas');
+    expect(useTranslations('fa')('nav.ideas')).toBe('ایده‌ها');
+    expect(useTranslations('ps')('nav.ideas')).toBe('ایډیاوې');
   });
 
   it('falls back to English, then to the key', () => {

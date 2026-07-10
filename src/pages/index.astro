@@ -2,9 +2,16 @@
 import '@fontsource-variable/vazirmatn';
 import '../styles/global.css';
 import { LOCALES, LOCALE_META, localizePath, useTranslations } from '../i18n';
-import { SITE_URL } from '../config';
+import { SITE_URL, GITHUB_REPO } from '../config';
+import { getCollection } from 'astro:content';
+import { parseContentId } from '../lib/content-utils';
 
 const tEn = useTranslations('en');
+const ideaCount = new Set(
+  (await getCollection('ideas', (e) => !e.data.draft)).map((e) => parseContentId(e.id).slug),
+).size;
+
+const CTA: Record<string, string> = { en: 'Enter', fa: 'ورود', ps: 'ننوتل' };
 ---
 
 <!doctype html>
@@ -34,24 +41,51 @@ const tEn = useTranslations('en');
   </head>
   <body>
     <main class="landing">
-      <p class="landing-mark">قدم‌ها</p>
-      <h1 class="landing-name">Qadamha</h1>
-      <div class="landing-langs">
-        {
-          LOCALES.map((l) => (
-            <a
-              class="landing-lang"
-              href={localizePath(l)}
-              lang={LOCALE_META[l].htmlLang}
-              dir={LOCALE_META[l].dir}
-            >
-              <strong>{LOCALE_META[l].nativeName}</strong>
-              <span>{useTranslations(l)('site.tagline')}</span>
-            </a>
-          ))
-        }
+      <div class="landing-inner">
+        <header class="landing-brand">
+          <svg class="landing-glyph" viewBox="0 0 64 64" width="52" height="52" aria-hidden="true">
+            <path
+              d="M10 52 V42 h12 V32 h12 V22 h12 V12 h8 V52 Z"
+              fill="none"
+              stroke="var(--accent)"
+              stroke-width="3.5"
+              stroke-linejoin="round"></path>
+          </svg>
+          <h1 class="landing-mark" lang="fa" dir="rtl">قدم‌ها</h1>
+          <p class="landing-name" aria-hidden="true">Q&nbsp;A&nbsp;D&nbsp;A&nbsp;M&nbsp;H&nbsp;A</p>
+        </header>
+
+        <p class="landing-taglines">
+          <span lang="en">Every attempt was a step.</span>
+          <span lang="fa" dir="rtl">هر تلاش، یک قدم بود.</span>
+          <span lang="ps" dir="rtl">هره هڅه یو ګام و.</span>
+        </p>
+
+        <nav class="landing-langs" aria-label="Choose your language">
+          {
+            LOCALES.map((l) => (
+              <a
+                class="landing-lang"
+                href={localizePath(l)}
+                lang={LOCALE_META[l].htmlLang}
+                dir={LOCALE_META[l].dir}
+              >
+                <span class="lang-name">{LOCALE_META[l].nativeName}</span>
+                <span class="lang-tagline">{useTranslations(l)('site.description')}</span>
+                <span class="lang-cta">{CTA[l]}</span>
+              </a>
+            ))
+          }
+        </nav>
+
+        <footer class="landing-foot">
+          <span>{ideaCount} ideas · 3 languages</span>
+          <span aria-hidden="true">·</span>
+          <a href={GITHUB_REPO} rel="noopener">Open source</a>
+          <span aria-hidden="true">·</span>
+          <span>MIT + CC BY-SA 4.0</span>
+        </footer>
       </div>
-      <p class="landing-desc">{tEn('site.description')}</p>
     </main>
   </body>
 </html>
@@ -60,75 +94,131 @@ const tEn = useTranslations('en');
   .landing {
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    padding: 2rem 1.25rem;
-    text-align: center;
+    padding: 3rem 1.25rem;
     background:
-      radial-gradient(50rem 25rem at 50% -10%, rgba(232, 163, 61, 0.1), transparent);
+      radial-gradient(55rem 30rem at 50% -12%, rgba(232, 163, 61, 0.14), transparent 60%),
+      radial-gradient(40rem 24rem at 85% 105%, rgba(232, 163, 61, 0.05), transparent 60%),
+      var(--bg);
+  }
+
+  .landing-inner {
+    inline-size: min(100%, 62rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2.25rem;
+  }
+
+  .landing-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .landing-mark {
-    font-size: clamp(3rem, 9vw, 5rem);
+    font-size: clamp(3.2rem, 9vw, 5.2rem);
     font-weight: 800;
     color: var(--accent);
     margin: 0;
-    line-height: 1.1;
+    line-height: 1.15;
+    text-shadow: 0 0 60px rgba(232, 163, 61, 0.35);
   }
 
   .landing-name {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-muted);
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    margin: 0 0 1.5rem;
+    letter-spacing: 0.45em;
+    margin: 0;
+  }
+
+  .landing-taglines {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 2rem;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    margin: 0;
   }
 
   .landing-langs {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-    gap: 1rem;
-    inline-size: min(100%, 46rem);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.1rem;
+    inline-size: 100%;
   }
 
   .landing-lang {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
-    padding: 1.4rem 1.2rem;
-    background: var(--bg-raised);
+    gap: 0.55rem;
+    padding: 1.6rem 1.4rem 1.3rem;
+    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 14px;
     color: var(--text);
+    text-align: start;
     transition:
-      border-color 0.15s ease,
-      transform 0.15s ease;
+      border-color 0.18s ease,
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
   .landing-lang:hover,
   .landing-lang:focus-visible {
     border-color: var(--accent);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px -18px rgba(232, 163, 61, 0.45);
     text-decoration: none;
   }
 
-  .landing-lang strong {
-    font-size: 1.35rem;
+  .lang-name {
+    font-size: 1.5rem;
+    font-weight: 800;
     color: var(--accent-strong);
   }
 
-  .landing-lang span {
+  .lang-tagline {
     color: var(--text-muted);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    flex: 1;
   }
 
-  .landing-desc {
-    max-width: 38rem;
+  .lang-cta {
+    align-self: flex-end;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 1.1rem;
+    transition: background 0.18s ease;
+  }
+
+  .landing-lang:hover .lang-cta,
+  .landing-lang:focus-visible .lang-cta {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .landing-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
     color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-block-start: 2rem;
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 40rem) {
+    .landing-inner {
+      gap: 1.75rem;
+    }
   }
 </style>

@@ -48,7 +48,7 @@ export function useTranslations(locale: Locale): Translator {
   };
 }
 
-/** Prefixes a site-relative path with the locale: localizePath('fa', '/stories/') → '/fa/stories/' */
+/** Prefixes a site-relative path with the locale: localizePath('fa', '/ideas/') → '/fa/ideas/' */
 export function localizePath(locale: Locale, path = '/'): string {
   const p = path.startsWith('/') ? path : `/${path}`;
   return p === '/' ? `/${locale}/` : `/${locale}${p}`;

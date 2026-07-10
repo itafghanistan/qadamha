@@ -21,7 +21,7 @@ further ahead because of it.
 
 - **Three languages:** English, Dari (دری), and Pashto (پښتو), with full RTL support.
 - **Stories as files:** every story is a Markdown file in
-  [`src/content/stories/`](src/content/stories/) — no database, no accounts.
+  [`src/content/ideas/`](src/content/ideas/) — no database, no accounts.
   The git history is part of the archive.
 - **Explore:** filterable story index, a year-by-year timeline, related
   stories, and share cards generated at build time.
@@ -33,8 +33,8 @@ further ahead because of it.
 Everyone is invited — founders, team members, friends, journalists.
 
 1. Fork this repository.
-2. Copy [`src/content/stories/_template.md`](src/content/stories/_template.md)
-   into `src/content/stories/en/`, `fa/`, or `ps/` and name it after the
+2. Copy [`src/content/ideas/_template.md`](src/content/ideas/_template.md)
+   into `src/content/ideas/en/`, `fa/`, or `ps/` and name it after the
    project (e.g. `my-startup.md`). Use the **same file name** in each language
    so translations link automatically.
 3. Fill in the details, write the story, set `draft: false`.

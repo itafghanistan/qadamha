@@ -1,0 +1,188 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import IdeaCard from '../../../components/IdeaCard.astro';
+import PersonLink from '../../../components/PersonLink.astro';
+import {
+  LOCALE_META,
+  localizePath,
+  useTranslations,
+  type Locale,
+} from '../../../i18n';
+import type { Post } from '../../../lib/posts';
+import { getPostTranslations, youTubeId } from '../../../lib/posts';
+import { getPerson, personName } from '../../../lib/people';
+import { parseContentId } from '../../../lib/content-utils';
+import { GITHUB_CONTENT_PATH, SITE_URL } from '../../../config';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('posts', (entry) => !entry.data.draft);
+  return entries.map((entry) => {
+    const { locale, slug } = parseContentId(entry.id);
+    return { params: { lang: locale, slug }, props: { entry } };
+  });
+}
+
+const { entry } = Astro.props as { entry: Post };
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const { slug } = parseContentId(entry.id);
+const { Content } = await render(entry);
+
+const data = entry.data;
+const availableLocales = await getPostTranslations(slug);
+const otherLocales = availableLocales.filter((l) => l !== locale);
+const person = await getPerson(data.author.person);
+const authorName = person ? personName(person, locale) : (data.author.name ?? 'Qadamha');
+const idea = data.idea ? await getEntry('ideas', `${locale}/${data.idea}`) : undefined;
+const videoId = data.videoUrl ? youTubeId(data.videoUrl) : null;
+
+const date = data.date.toLocaleDateString(LOCALE_META[locale].intlLocale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const path = `/posts/${slug}/`;
+const pageUrl = new URL(localizePath(locale, path), SITE_URL).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.title,
+  datePublished: data.date.toISOString(),
+  inLanguage: LOCALE_META[locale].htmlLang,
+  url: pageUrl,
+  author: [{ '@type': 'Person', name: authorName }],
+  publisher: { '@type': 'Organization', name: 'Qadamha', url: SITE_URL },
+};
+---
+
+<Base
+  locale={locale}
+  title={`${data.title} — ${t('site.name')}`}
+  description={data.title}
+  path={path}
+  availableLocales={availableLocales}
+  ogImage={`/og/posts/${locale}/${slug}.png`}
+  ogType="article"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="section">
+    <div class="container post-container">
+      <header>
+        <div class="post-chips">
+          <span class="chip">{t(`post.type.${data.type}`)}</span>
+          {
+            otherLocales.map((l) => (
+              <a href={localizePath(l, path)} lang={LOCALE_META[l].htmlLang} class="chip chip-muted">
+                {LOCALE_META[l].nativeName}
+              </a>
+            ))
+          }
+        </div>
+        <h1>{data.title}</h1>
+        <p class="post-byline">
+          <PersonLink locale={locale} person={person} name={authorName} size={28} />
+          <span class="post-date">· {date}</span>
+        </p>
+      </header>
+
+      {
+        videoId && (
+          <div class="video-frame">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+              title={data.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              loading="lazy"
+            />
+          </div>
+        )
+      }
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        idea && (
+          <aside class="post-idea">
+            <h2>{t('post.relatedIdea')}</h2>
+            <div class="card-grid one">
+              <IdeaCard idea={idea} locale={locale} />
+            </div>
+          </aside>
+        )
+      }
+
+      <p class="edit-link">
+        <a href={`${GITHUB_CONTENT_PATH}/posts/${locale}/${slug}.md`} rel="noopener">
+          {t('idea.editOnGitHub')}
+        </a>
+      </p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .post-container {
+    max-width: 46rem;
+  }
+
+  .post-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-block-end: 0.9rem;
+  }
+
+  .post-byline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    margin-block-end: 2rem;
+  }
+
+  .post-date {
+    white-space: nowrap;
+  }
+
+  .video-frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    margin-block-end: 2rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .video-frame iframe {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+
+  .post-idea {
+    margin-block-start: 2.5rem;
+  }
+
+  .post-idea h2 {
+    font-size: 1.1rem;
+    color: var(--accent-strong);
+  }
+
+  .card-grid.one {
+    grid-template-columns: minmax(0, 24rem);
+  }
+
+  .edit-link {
+    margin-block-start: 2rem;
+    font-size: 0.88rem;
+  }
+</style>

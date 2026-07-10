@@ -1,0 +1,125 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import IdeaCard from '../../../components/IdeaCard.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Avatar from '../../../components/Avatar.astro';
+import SocialIcon from '../../../components/SocialIcon.astro';
+import { LOCALES, useTranslations, type Locale } from '../../../i18n';
+import { getIdeas } from '../../../lib/ideas';
+import { getPostsByPerson } from '../../../lib/posts';
+import { ideasForPerson, personName, type Person } from '../../../lib/people';
+import { parseContentId } from '../../../lib/content-utils';
+
+export async function getStaticPaths() {
+  const people = await getCollection('people');
+  return LOCALES.flatMap((lang) =>
+    people.map((person) => ({ params: { lang, id: person.id }, props: { person } })),
+  );
+}
+
+const { person } = Astro.props as { person: Person };
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+const { Content } = await render(person);
+
+const name = personName(person, locale);
+const ideas = ideasForPerson(person.id, await getIdeas(locale));
+// Show the person's posts in the current language; fall back to any language.
+const allPosts = await getPostsByPerson(person.id);
+const localePosts = allPosts.filter((p) => parseContentId(p.id).locale === locale);
+const posts = localePosts.length > 0 ? localePosts : allPosts;
+---
+
+<Base
+  locale={locale}
+  title={`${name} — ${t('site.name')}`}
+  description={`${name} — ${t('person.ideas')}`}
+  path={`/people/${person.id}/`}
+>
+  <section class="section">
+    <div class="container profile">
+      <header class="profile-header">
+        <Avatar src={person.data.avatar} name={person.data.name} hueKey={person.id} size={96} />
+        <div>
+          <h1>{name}</h1>
+          {person.data.city && <p class="profile-city">{person.data.city}</p>}
+          {
+            person.data.links && person.data.links.length > 0 && (
+              <p class="profile-links">
+                {person.data.links.map((l) => (
+                  <SocialIcon url={l.url} label={l.label} />
+                ))}
+              </p>
+            )
+          }
+        </div>
+      </header>
+
+      <div class="prose profile-bio">
+        <Content />
+      </div>
+
+      {
+        ideas.length > 0 && (
+          <>
+            <h2>{t('person.ideas')}</h2>
+            <div class="card-grid">
+              {ideas.map((idea) => (
+                <IdeaCard idea={idea} locale={locale} />
+              ))}
+            </div>
+          </>
+        )
+      }
+
+      {
+        posts.length > 0 && (
+          <>
+            <h2>{t('person.posts')}</h2>
+            <div class="card-grid">
+              {posts.map((post) => {
+                const postLocale = parseContentId(post.id).locale;
+                return <PostCard post={post} locale={postLocale} />;
+              })}
+            </div>
+          </>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .profile-header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-block-end: 1.75rem;
+  }
+
+  .profile-header h1 {
+    margin: 0;
+  }
+
+  .profile-city {
+    color: var(--text-muted);
+    margin: 0.2rem 0 0;
+  }
+
+  .profile-links {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0.6rem 0 0;
+  }
+
+  .profile-bio {
+    margin-block-end: 2.5rem;
+  }
+
+  .profile h2 {
+    color: var(--accent-strong);
+    margin-block: 2.25rem 1rem;
+  }
+</style>

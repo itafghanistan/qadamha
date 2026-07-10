@@ -1,0 +1,69 @@
+---
+import type { Locale } from '../i18n';
+import { LOCALE_META, localizePath, useTranslations } from '../i18n';
+import type { Post } from '../lib/posts';
+import { getPerson, personName } from '../lib/people';
+import { parseContentId } from '../lib/content-utils';
+import Avatar from './Avatar.astro';
+
+interface Props {
+  post: Post;
+  locale: Locale;
+  /** Localized name of the linked idea, when the caller already resolved it. */
+  ideaName?: string | undefined;
+}
+
+const { post, locale, ideaName } = Astro.props;
+const t = useTranslations(locale);
+const { slug } = parseContentId(post.id);
+const person = await getPerson(post.data.author.person);
+const authorName = person ? personName(person, locale) : (post.data.author.name ?? 'Qadamha');
+const date = post.data.date.toLocaleDateString(LOCALE_META[locale].intlLocale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<a class="card post-card" href={localizePath(locale, `/posts/${slug}/`)}>
+  <div class="post-top">
+    <span class="chip">{t(`post.type.${post.data.type}`)}</span>
+    {ideaName && <span class="chip chip-muted">{ideaName}</span>}
+  </div>
+  <h3>{post.data.title}</h3>
+  <div class="post-byline">
+    <Avatar
+      src={person?.data.avatar}
+      name={person?.data.name ?? authorName}
+      hueKey={person?.id ?? authorName}
+      size={22}
+    />
+    <span>{authorName}</span>
+    <span class="post-date">· {date}</span>
+  </div>
+</a>
+
+<style>
+  .post-top {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-block-end: 0.7rem;
+  }
+
+  .post-card h3 {
+    margin-block-end: 0.7rem;
+  }
+
+  .post-byline {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+
+  .post-date {
+    white-space: nowrap;
+  }
+</style>

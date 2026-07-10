@@ -1,0 +1,92 @@
+---
+import type { Locale } from '../i18n';
+import { formatYear, localizePath, useTranslations } from '../i18n';
+import type { Idea } from '../lib/ideas';
+import { hueFromSlug, parseContentId } from '../lib/content-utils';
+
+interface Props {
+  idea: Idea;
+  locale: Locale;
+}
+
+const { idea, locale } = Astro.props;
+const t = useTranslations(locale);
+const { slug } = parseContentId(idea.id);
+const { name, tagline, logo, sector, city, yearsActive, status } = idea.data;
+const hue = hueFromSlug(slug);
+const years =
+  formatYear(locale, yearsActive.start) +
+  '–' +
+  (yearsActive.end ? formatYear(locale, yearsActive.end) : t('idea.present'));
+---
+
+<a
+  class="card idea-card"
+  href={localizePath(locale, `/ideas/${slug}/`)}
+  data-slug={slug}
+  data-sector={sector}
+  data-city={city}
+  data-year-start={yearsActive.start}
+  data-year-end={yearsActive.end}
+  data-status={status}
+  data-reasons={idea.data.reasons.join(' ')}
+>
+  <div class="idea-head">
+    {
+      logo ? (
+        <img class="idea-logo" src={logo} alt="" width="56" height="56" loading="lazy" />
+      ) : (
+        <span class="idea-logo idea-monogram" style={`--logo-hue: ${hue}`} aria-hidden="true">
+          {name.trim().charAt(0).toUpperCase()}
+        </span>
+      )
+    }
+    <div>
+      <h3>{name}</h3>
+      <p class="tagline">{tagline}</p>
+    </div>
+  </div>
+  <div class="card-meta">
+    <span class="chip">{t(`status.${status}`)}</span>
+    <span class="chip chip-muted">{t(`sector.${sector}`)}</span>
+    <span class="chip chip-muted">{city}</span>
+    <span class="chip chip-muted">{years}</span>
+  </div>
+</a>
+
+<style>
+  .idea-head {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    margin-block-end: 0.9rem;
+  }
+
+  .idea-logo {
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--bg-soft);
+  }
+
+  .idea-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--logo-hue) 42% 26%);
+    color: hsl(var(--logo-hue) 75% 78%);
+    font-size: 1.7rem;
+    font-weight: 800;
+  }
+
+  .idea-card .tagline {
+    margin-block: 0.15rem 0;
+    font-size: 0.95rem;
+  }
+
+  .idea-card h3 {
+    margin: 0;
+  }
+</style>

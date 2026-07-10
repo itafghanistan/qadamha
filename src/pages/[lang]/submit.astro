@@ -1,0 +1,223 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { SECTORS, STATUSES } from '../../content.config';
+import { CONTACT_EMAIL, GITHUB_NEW_ISSUE } from '../../config';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const t = useTranslations(locale);
+---
+
+<Base
+  locale={locale}
+  title={`${t('submit.title')} — ${t('site.name')}`}
+  description={t('submit.intro')}
+  path="/submit/"
+>
+  <section class="section">
+    <div class="container submit">
+      <h1>{t('submit.title')}</h1>
+      <p class="lead">{t('submit.intro')}</p>
+
+      <form
+        id="submit-form"
+        data-github={GITHUB_NEW_ISSUE}
+        data-email={CONTACT_EMAIL}
+      >
+        <label>
+          <span>{t('submit.f.name')}</span>
+          <input name="name" required />
+        </label>
+
+        <label>
+          <span>{t('submit.f.tagline')}</span>
+          <input name="tagline" required placeholder={t('submit.f.taglineExample')} />
+        </label>
+
+        <label>
+          <span>{t('submit.f.story')}</span>
+          <small>{t('submit.f.storyHint')}</small>
+          <textarea name="story" rows="10" required></textarea>
+        </label>
+
+        <div class="grid-2">
+          <label>
+            <span>{t('submit.f.founders')} <em>({t('submit.optional')})</em></span>
+            <small>{t('submit.f.foundersHint')}</small>
+            <input name="founders" />
+          </label>
+          <label>
+            <span>{t('submit.f.city')} <em>({t('submit.optional')})</em></span>
+            <input name="city" />
+          </label>
+          <label>
+            <span>{t('submit.f.sector')} <em>({t('submit.optional')})</em></span>
+            <select name="sector">
+              <option value=""></option>
+              {SECTORS.map((s) => <option value={s}>{t(`sector.${s}`)}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>{t('submit.f.status')} <em>({t('submit.optional')})</em></span>
+            <select name="status">
+              <option value=""></option>
+              {STATUSES.map((s) => <option value={s}>{t(`status.${s}`)}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>{t('submit.f.yearStart')} <em>({t('submit.optional')})</em></span>
+            <input name="yearStart" type="number" min="1900" max="2100" />
+          </label>
+          <label>
+            <span>{t('submit.f.yearEnd')} <em>({t('submit.optional')})</em></span>
+            <input name="yearEnd" type="number" min="1900" max="2100" />
+          </label>
+        </div>
+
+        <label>
+          <span>{t('submit.f.links')} <em>({t('submit.optional')})</em></span>
+          <small>{t('submit.f.linksHint')}</small>
+          <textarea name="links" rows="3"></textarea>
+        </label>
+
+        <label>
+          <span>{t('submit.f.contact')} <em>({t('submit.optional')})</em></span>
+          <small>{t('submit.f.contactHint')}</small>
+          <input name="contact" />
+        </label>
+
+        <div class="submit-actions">
+          <button type="submit" class="btn btn-primary" data-action="github">
+            {t('submit.action.github')}
+          </button>
+          <button type="submit" class="btn btn-ghost" data-action="email">
+            {t('submit.action.email')}
+          </button>
+        </div>
+        <p class="submit-note">{t('submit.note')}</p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('submit-form') as HTMLFormElement;
+  let action = 'github';
+  for (const btn of form.querySelectorAll<HTMLButtonElement>('button[type="submit"]')) {
+    btn.addEventListener('click', () => (action = btn.dataset.action ?? 'github'));
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const field = (key: string) => ((data.get(key) as string) ?? '').trim();
+
+    const years = [field('yearStart'), field('yearEnd')].filter(Boolean).join('–');
+    const lines = [
+      `**Tagline:** ${field('tagline')}`,
+      field('founders') && `**Founders:** ${field('founders')}`,
+      field('city') && `**City:** ${field('city')}`,
+      field('sector') && `**Sector:** ${field('sector')}`,
+      field('status') && `**Status:** ${field('status')}`,
+      years && `**Years:** ${years}`,
+      '',
+      field('story'),
+      field('links') && `\n**Links & sources:**\n${field('links')}`,
+      field('contact') && `\n**Contact (do not publish):** ${field('contact')}`,
+    ].filter((line) => line !== false && line !== undefined);
+
+    const title = `[Story] ${field('name')}`;
+    const body = lines.join('\n');
+
+    if (action === 'email') {
+      location.href =
+        `mailto:${form.dataset.email}?subject=${encodeURIComponent(title)}` +
+        `&body=${encodeURIComponent(body)}`;
+    } else {
+      const url =
+        `${form.dataset.github}?labels=story-submission&title=${encodeURIComponent(title)}` +
+        `&body=${encodeURIComponent(body)}`;
+      window.open(url, '_blank', 'noopener');
+    }
+  });
+</script>
+
+<style>
+  .submit {
+    max-width: 44rem;
+  }
+
+  .lead {
+    color: var(--text-muted);
+    margin-block-end: 2rem;
+  }
+
+  #submit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  #submit-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  #submit-form label span {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  #submit-form label em {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: normal;
+    font-size: 0.85rem;
+  }
+
+  #submit-form small {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  #submit-form input,
+  #submit-form select,
+  #submit-form textarea {
+    background: var(--bg-raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  #submit-form input:focus-visible,
+  #submit-form select:focus-visible,
+  #submit-form textarea:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1.2rem;
+  }
+
+  .submit-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-block-start: 0.5rem;
+  }
+
+  .submit-note {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+</style>

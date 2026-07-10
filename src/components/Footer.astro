@@ -1,14 +1,22 @@
 ---
 import type { Locale } from '../i18n';
-import { useTranslations } from '../i18n';
-import { GITHUB_REPO } from '../config';
+import { localizePath, useTranslations } from '../i18n';
+import { GITHUB_NEW_ISSUE, GITHUB_REPO, SITE_URL } from '../config';
 
 interface Props {
   locale: Locale;
+  /** Path of the current page WITHOUT the locale prefix — prefills the report. */
+  path?: string;
 }
 
-const { locale } = Astro.props;
+const { locale, path = '/' } = Astro.props;
 const t = useTranslations(locale);
+
+const reportUrl =
+  `${GITHUB_NEW_ISSUE}?labels=report&title=` +
+  encodeURIComponent(`[Report] ${localizePath(locale, path)}`) +
+  '&body=' +
+  encodeURIComponent(`Page: ${new URL(localizePath(locale, path), SITE_URL).href}\n\n`);
 ---
 
 <footer class="site-footer">
@@ -19,6 +27,8 @@ const t = useTranslations(locale);
     </p>
     <p class="footer-meta">
       <a href={GITHUB_REPO} rel="noopener">{t('footer.openSource')}</a>
+      <span aria-hidden="true"> · </span>
+      <a href={reportUrl} rel="noopener">{t('footer.reportIssue')}</a>
       <span aria-hidden="true"> · </span>
       <span>{t('footer.license')}</span>
     </p>

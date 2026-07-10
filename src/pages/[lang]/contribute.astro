@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { LOCALES, useTranslations, type Locale } from '../../i18n';
+import { LOCALES, localizePath, useTranslations, type Locale } from '../../i18n';
 import { GITHUB_NEW_STORY_ISSUE, GITHUB_REPO } from '../../config';
 
 export function getStaticPaths() {
@@ -24,6 +24,14 @@ const devSteps = ['s1', 's2', 's3', 's4', 's5'].map((s) => t(`contribute.dev.${s
       <p class="lead">{t('contribute.intro')}</p>
 
       <div class="paths">
+        <div class="path-card path-featured">
+          <h2>{t('contribute.form.title')}</h2>
+          <p>{t('contribute.form.body')}</p>
+          <a class="btn btn-primary" href={localizePath(locale, '/submit/')}>
+            {t('contribute.form.cta')}
+          </a>
+        </div>
+
         <div class="path-card">
           <h2>{t('contribute.dev.title')}</h2>
           <ol>
@@ -35,7 +43,7 @@ const devSteps = ['s1', 's2', 's3', 's4', 's5'].map((s) => t(`contribute.dev.${s
         <div class="path-card">
           <h2>{t('contribute.nondev.title')}</h2>
           <p>{t('contribute.nondev.body')}</p>
-          <a class="btn btn-primary" href={GITHUB_NEW_STORY_ISSUE} rel="noopener">
+          <a class="btn btn-ghost" href={GITHUB_NEW_STORY_ISSUE} rel="noopener">
             {t('contribute.nondev.cta')}
           </a>
         </div>
@@ -80,6 +88,10 @@ const devSteps = ['s1', 's2', 's3', 's4', 's5'].map((s) => t(`contribute.dev.${s
 
   .path-card h2 {
     font-size: 1.2rem;
+  }
+
+  .path-featured {
+    border-color: var(--accent);
   }
 
   .path-card ol {
